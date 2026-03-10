@@ -11,10 +11,8 @@
     "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
-    "@radix-ui/react-separator": "^1.1.0",
     "axios": "^1.7.8",
     "better-sqlite3": "^11.7.0",
-    "clsx": "^2.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.0.2"
