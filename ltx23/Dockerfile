@@ -10,7 +10,12 @@ ENV LTX23_BASE_IMAGE=antilopax/ltx23:v14 \
 
 COPY dashboard.py /usr/local/bin/ltx23-dashboard.py
 COPY entrypoint.sh /usr/local/bin/ltx23-wrapper-entrypoint.sh
-RUN chmod +x /usr/local/bin/ltx23-dashboard.py /usr/local/bin/ltx23-wrapper-entrypoint.sh
+RUN chmod +x /usr/local/bin/ltx23-dashboard.py /usr/local/bin/ltx23-wrapper-entrypoint.sh \
+    && bash -n /usr/local/bin/ltx23-wrapper-entrypoint.sh \
+    && python3 -m py_compile /usr/local/bin/ltx23-dashboard.py \
+    && test -x /opt/nvidia/nvidia_entrypoint.sh \
+    && test -x /app/startup_unix.sh \
+    && test -f /app/ComfyUI/main.py
 
 EXPOSE 8080 8188 8888
 
