@@ -35,6 +35,7 @@ persist_dir user
 if [ "${ENABLE_DASHBOARD:-1}" != "0" ]; then
   echo "[ltx23-wrapper] Starting dashboard watchdog on port ${DASHBOARD_PORT:-18080}..."
   (
+    set +e
     while true; do
       echo "[dashboard-watchdog] launching dashboard at $(date -Is)" >> "$LOG_DIR/ltx23-dashboard.log"
       python3 /usr/local/bin/ltx23-dashboard.py >> "$LOG_DIR/ltx23-dashboard.log" 2>&1
