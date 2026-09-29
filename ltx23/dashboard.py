@@ -19,7 +19,7 @@ LOG_DIR = WORKSPACE / "logs"
 STATUS_FILE = LOG_DIR / "ltx23-model-status.json"
 COMFY_PORT = int(os.getenv("COMFY_PORT", "8188"))
 JUPYTER_PORT = int(os.getenv("JUPYTER_PORT", "8888"))
-DASHBOARD_PORT = int(os.getenv("DASHBOARD_PORT", "8080"))
+DASHBOARD_PORT = int(os.getenv("DASHBOARD_PORT", "18080"))
 PROFILE = "Exact 5-model"
 BASE_IMAGE = os.getenv("LTX23_BASE_IMAGE", "antilopax/ltx23:v14")
 DASHBOARD_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "")
@@ -87,7 +87,7 @@ HTML = r'''<!doctype html>
       <pre id="logBox" class="log">Loading…</pre>
     </section>
   </div>
-  <div class="footer">Auto-refreshes every 1.5 seconds · Dashboard port 8080</div>
+  <div class="footer">Auto-refreshes every 1.5 seconds · Dashboard port 18080</div>
 </div>
 <script>
 let activeLog='models';
