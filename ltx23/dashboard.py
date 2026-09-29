@@ -23,6 +23,7 @@ DASHBOARD_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "")
 BASE_IMAGE = os.getenv("LTX23_BASE_IMAGE", "antilopax/ltx23:v14")
 
 LOG_FILES = {
+    "models": LOG_DIR / "ltx23-model-download.log",
     "container": LOG_DIR / "ltx23-container.log",
     "jupyter": LOG_DIR / "jupyter.log",
     "dashboard": LOG_DIR / "ltx23-dashboard.log",
@@ -60,6 +61,7 @@ HTML = r"""<!doctype html>
       <div style="margin-top:14px">
         <div class="row"><span class="service"><span id="comfyDot" class="svc-dot"></span>ComfyUI</span><span id="comfyState" class="tiny">checking</span></div>
         <div class="row"><span class="service"><span id="jupyterDot" class="svc-dot"></span>JupyterLab</span><span id="jupyterState" class="tiny">checking</span></div>
+        <div class="row"><span class="service"><span id="modelDot" class="svc-dot"></span>Exact workflow models</span><span id="modelState" class="tiny">checking</span></div>
       </div>
     </section>
     <section class="card stat"><div class="tiny">GPU</div><div id="gpuName" class="metric" style="font-size:18px">—</div><div id="gpuUtil" class="muted">—</div></section>
@@ -68,7 +70,8 @@ HTML = r"""<!doctype html>
     <section class="card logs">
       <div class="title">Live logs</div>
       <div class="tabs">
-        <button class="tab active" data-log="container">LTX / ComfyUI</button>
+        <button class="tab active" data-log="models">Models</button>
+        <button class="tab" data-log="container">LTX / ComfyUI</button>
         <button class="tab" data-log="jupyter">Jupyter</button>
         <button class="tab" data-log="dashboard">Dashboard</button>
       </div>
@@ -78,7 +81,7 @@ HTML = r"""<!doctype html>
   <div class="footer">Dashboard port 8080 · workspace /workspace</div>
 </div>
 <script>
-let activeLog='container';
+let activeLog='models';
 const $=id=>document.getElementById(id);
 function extUrl(host,port,path=''){if(!port)return null; return 'http://'+(host||window.location.hostname)+':'+port+path}
 function setSvc(name,up){$(name+'Dot').className='svc-dot '+(up?'ok':'bad');$(name+'State').textContent=up?'ready':'starting / unavailable'}
@@ -90,6 +93,9 @@ async function status(){
     if(s.gpu){$('gpuName').textContent=s.gpu.name||'GPU';$('gpuUtil').textContent=(s.gpu.utilization_pct??'—')+'% utilization';$('vram').textContent=s.gpu.memory_total_mb?((s.gpu.memory_used_mb/1024).toFixed(1)+' / '+(s.gpu.memory_total_mb/1024).toFixed(1)+' GB'):'—';$('gpuTemp').textContent=s.gpu.temperature_c!=null?(s.gpu.temperature_c+' °C · '+(s.gpu.power_w??'—')+' W'):'—'}
     if(s.disk){$('disk').textContent=fmtGB(s.disk.used_mb);$('diskSub').textContent=fmtGB(s.disk.free_mb)+' free of '+fmtGB(s.disk.total_mb)}
     setSvc('comfy',s.services.comfy);setSvc('jupyter',s.services.jupyter);
+    const mr=s.models||{ready:0,total:5,complete:false,running:false};
+    $('modelDot').className='svc-dot '+(mr.complete?'ok':(mr.running?'':'bad'));
+    $('modelState').textContent=mr.complete?('ready '+mr.ready+'/'+mr.total):(mr.running?('downloading '+mr.ready+'/'+mr.total):('not running '+mr.ready+'/'+mr.total));
     const host=s.public_host||window.location.hostname;
     const comfy=extUrl(host,s.public_ports.comfy,'/');
     const jp=s.jupyter_token?('/lab?token='+encodeURIComponent(s.jupyter_token)):'/lab';
@@ -155,6 +161,26 @@ def public_host():
     return os.getenv("PUBLIC_IPADDR") or os.getenv("VAST_IPADDR") or os.getenv("VAST_PUBLIC_IP") or ""
 
 
+def model_status():
+    path = LOG_DIR / "ltx23-model-status.json"
+    out = {"ready": 0, "total": 5, "complete": False, "running": False}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        out["ready"] = int(data.get("ready", 0))
+        out["total"] = int(data.get("total", 5))
+        out["complete"] = out["total"] > 0 and out["ready"] >= out["total"]
+    except Exception:
+        pass
+    try:
+        pid_path = LOG_DIR / "ltx23-model-download.pid"
+        pid = int(pid_path.read_text().strip())
+        os.kill(pid, 0)
+        out["running"] = True
+    except Exception:
+        pass
+    return out
+
+
 def read_token():
     for p in [WORKSPACE/".jupyter_token", Path("/root/.jupyter_token")]:
         try:
@@ -200,6 +226,7 @@ class Handler(BaseHTTPRequestHandler):
                 "gpu":gpu_info(),
                 "disk":disk_info(),
                 "services":{"comfy":port_open(COMFY_PORT),"jupyter":port_open(JUPYTER_PORT)},
+                "models":model_status(),
                 "public_ports":{"dashboard":public_port(DASHBOARD_PORT),"comfy":public_port(COMFY_PORT),"jupyter":public_port(JUPYTER_PORT)},
                 "public_host":public_host(),
                 "jupyter_token":read_token(),
