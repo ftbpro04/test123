@@ -24,7 +24,7 @@ LTX 2.3 10Eros triple-pass I2V based on antilopax/ltx23:v14 with exact workflow 
 
 TCP only:
 
-- `8080` — Dashboard
+- `18080` — Dashboard
 - `8188` — ComfyUI
 - `8888` — JupyterLab
 
@@ -36,7 +36,7 @@ Recommended:
 WORKSPACE=/workspace
 LTX23_PERSIST_ROOT=/workspace/ComfyUI
 ENABLE_DASHBOARD=1
-DASHBOARD_PORT=8080
+DASHBOARD_PORT=18080
 COMFY_PORT=8188
 JUPYTER_PORT=8888
 DOWNLOAD_WORKFLOW_MODELS=1
