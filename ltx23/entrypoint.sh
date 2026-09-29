@@ -33,7 +33,16 @@ persist_dir output
 persist_dir user
 
 if [ "${ENABLE_DASHBOARD:-1}" != "0" ]; then
-  nohup python3 /usr/local/bin/ltx23-dashboard.py >> "$LOG_DIR/ltx23-dashboard.log" 2>&1 &
+  echo "[ltx23-wrapper] Starting dashboard watchdog on port ${DASHBOARD_PORT:-18080}..."
+  (
+    while true; do
+      echo "[dashboard-watchdog] launching dashboard at $(date -Is)" >> "$LOG_DIR/ltx23-dashboard.log"
+      python3 /usr/local/bin/ltx23-dashboard.py >> "$LOG_DIR/ltx23-dashboard.log" 2>&1
+      rc=$?
+      echo "[dashboard-watchdog] dashboard exited rc=$rc; restarting in 2s" >> "$LOG_DIR/ltx23-dashboard.log"
+      sleep 2
+    done
+  ) &
   echo $! > "$LOG_DIR/ltx23-dashboard.pid"
 fi
 
