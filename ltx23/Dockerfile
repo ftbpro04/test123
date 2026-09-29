@@ -40,3 +40,4 @@ EXPOSE 18080 8188 8888
 # Preserve the original Antilopax startup. The wrapper only adds persistence,
 # the dashboard, exact workflow nodes, and the exact five active workflow models.
 ENTRYPOINT ["/usr/local/bin/ltx23-wrapper-entrypoint.sh"]
+CMD ["/app/startup_unix.sh"]
