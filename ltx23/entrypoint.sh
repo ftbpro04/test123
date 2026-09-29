@@ -61,6 +61,25 @@ echo "[ltx23-wrapper] Persistent ComfyUI data: $PERSIST_ROOT"
 echo "[ltx23-wrapper] Base LTX model auto-downloads: disabled"
 echo "[ltx23-wrapper] Exact workflow models: ${DOWNLOAD_WORKFLOW_MODELS:-1}"
 echo "[ltx23-wrapper] Original NVIDIA entrypoint: /opt/nvidia/nvidia_entrypoint.sh"
-echo "[ltx23-wrapper] Original command: $*"
 
-exec /opt/nvidia/nvidia_entrypoint.sh "$@"
+# Vast's Docker ENTRYPOINT launch mode can occasionally supply no CMD.
+# Never allow that to make the container exit immediately.
+if [ "$#" -eq 0 ]; then
+  set -- /app/startup_unix.sh
+fi
+
+echo "[ltx23-wrapper] Startup command: $*"
+
+# Keep this wrapper as PID 1. If the Antilopax startup unexpectedly exits,
+# keep the Vast instance alive so the dashboard/logs remain reachable.
+set +e
+/opt/nvidia/nvidia_entrypoint.sh "$@"
+MAIN_RC=$?
+set -e
+
+echo "[ltx23-wrapper] WARNING: Antilopax startup exited with code $MAIN_RC"
+echo "[ltx23-wrapper] Keeping container alive for diagnostics instead of stopping Vast."
+
+while true; do
+  sleep 3600
+done
