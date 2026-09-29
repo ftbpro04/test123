@@ -67,7 +67,7 @@ Recreating an instance with the same volume causes existing models to be skipped
 
 ## Ports
 
-- 8080 — dashboard
+- 18080 — dashboard
 - 8188 — ComfyUI
 - 8888 — JupyterLab
 
