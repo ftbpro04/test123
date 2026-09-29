@@ -41,6 +41,7 @@ if os.getenv("DOWNLOAD_INT8_VIDEO_VAE", "0").lower() in {"1", "true", "yes", "on
     MODELS.append({"name":"MiniMax H3 video VAE INT8 ConvRot (optional)","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_video_vae_int8_convrot.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]})
 
 lock = threading.Lock()
+write_lock = threading.Lock()
 state: dict[str, dict] = {}
 order: list[str] = []
 
@@ -68,9 +69,21 @@ def write_status() -> None:
         "total": len(rows),
         "models": rows,
     }
-    tmp = STATUS_FILE.with_suffix(".tmp")
-    tmp.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    tmp.replace(STATUS_FILE)
+    # Multiple model downloads report progress from different threads.
+    # Give each writer its own temp file and serialize the final replace so
+    # concurrent progress updates cannot delete each other's temp file.
+    with write_lock:
+        tmp = STATUS_FILE.with_name(
+            f"{STATUS_FILE.name}.{os.getpid()}.{threading.get_ident()}.tmp"
+        )
+        try:
+            tmp.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            os.replace(tmp, STATUS_FILE)
+        finally:
+            try:
+                tmp.unlink(missing_ok=True)
+            except Exception:
+                pass
 
 
 def update(name: str, **fields) -> None:
