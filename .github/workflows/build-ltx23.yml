@@ -4,7 +4,9 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "ltx23/**"
+      - "ltx23/Dockerfile"
+      - "ltx23/dashboard.py"
+      - "ltx23/entrypoint.sh"
       - ".github/workflows/build-ltx23.yml"
 
 permissions:

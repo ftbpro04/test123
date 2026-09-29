@@ -1,47 +1,51 @@
 # Vast LTX 2.3 Dashboard
 
-A thin Vast.ai wrapper around:
+Thin Vast.ai wrapper around:
 
 ```
 antilopax/ltx23:v14
 ```
 
-It deliberately does **not** replace the original image's ENTRYPOINT or CMD. The only image-level additions are:
-
-- LTX 2.3 control-panel dashboard
-- ports 8080 / 8188 / 8888 exposed
-- Vast-friendly environment defaults
-
-The resulting GHCR image is:
+Published as:
 
 ```
 ghcr.io/ftbpro04/vast-ltx23:latest
 ```
 
-## Why it is thin
+## What it preserves
 
-The source image may contain its own startup logic, custom nodes, model setup, or optimizations. Replacing its startup command would risk breaking those. Instead, Vast's On-start Script launches the dashboard in the background after the container starts.
-
-## Dashboard
-
-Port `8080` provides:
-
-- Open ComfyUI button
-- Open JupyterLab button
-- GPU utilization
-- VRAM usage
-- GPU temperature and power
-- /workspace disk usage
-- live dashboard/startup logs
-
-## Persistent storage
-
-Mount a Vast persistent volume at:
+The original image was inspected before wrapping. It uses:
 
 ```
-/workspace
+ENTRYPOINT ["/opt/nvidia/nvidia_entrypoint.sh"]
+CMD ["/app/startup_unix.sh"]
+WORKDIR /app/ComfyUI
 ```
 
-This is especially important for large LTX model files and helps prevent repeated model downloads when moving between compatible instances.
+The wrapper chains back into that exact original startup path.
 
-See `VAST_TEMPLATE.md` for the exact Vast.ai fields.
+## What it adds
+
+- Dashboard on port 8080
+- ComfyUI/Jupyter launch buttons
+- GPU, VRAM, temperature, power and disk status
+- live startup/dashboard logs
+- persistent `/workspace`
+- model persistence across Vast instances
+
+The wrapper redirects the base image's writable ComfyUI folders to:
+
+```
+/workspace/ComfyUI/models
+/workspace/ComfyUI/input
+/workspace/ComfyUI/output
+/workspace/ComfyUI/user
+```
+
+This is especially useful on Vast because large LTX checkpoints can remain on the same persistent volume instead of being downloaded again for every new instance.
+
+## Base model defaults
+
+The inspected `v14` image defaults to LTX 2.3 Distilled + Full FP8 + upscalers, with Full BF16 disabled.
+
+See `VAST_TEMPLATE.md` for exact Vast.ai fields and a lower-bandwidth configuration.
