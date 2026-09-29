@@ -6,7 +6,7 @@ COMFY_ROOT="/app/ComfyUI"
 PERSIST_ROOT="${LTX23_PERSIST_ROOT:-$WORKSPACE/ComfyUI}"
 LOG_DIR="$WORKSPACE/logs"
 
-mkdir -p "$LOG_DIR" "$PERSIST_ROOT"
+mkdir -p "$LOG_DIR" "$PERSIST_ROOT" "$WORKSPACE/hf-cache"
 
 persist_dir() {
   local name="$1"
@@ -15,8 +15,6 @@ persist_dir() {
 
   mkdir -p "$dst"
 
-  # Seed the persistent directory from anything baked into the image, but only
-  # when the persistent destination is empty.
   if [ -d "$src" ] && [ ! -L "$src" ]; then
     if [ -z "$(find "$dst" -mindepth 1 -print -quit 2>/dev/null)" ]; then
       cp -a "$src/." "$dst/" 2>/dev/null || true
@@ -29,23 +27,30 @@ persist_dir() {
   ln -s "$dst" "$src"
 }
 
-# Large assets and user data survive when /workspace is a Vast persistent volume.
 persist_dir models
 persist_dir input
 persist_dir output
 persist_dir user
 
-# Start the control panel without interfering with the base image startup.
 if [ "${ENABLE_DASHBOARD:-1}" != "0" ]; then
   nohup python3 /usr/local/bin/ltx23-dashboard.py >> "$LOG_DIR/ltx23-dashboard.log" 2>&1 &
   echo $! > "$LOG_DIR/ltx23-dashboard.pid"
 fi
 
-# Capture the original startup output for the dashboard while keeping the
-# NVIDIA entrypoint as the final process path.
+if [[ "${DOWNLOAD_WORKFLOW_MODELS:-1}" =~ ^(1|true|yes|on)$ ]]; then
+  echo "[ltx23-wrapper] Starting exact 5-model workflow download..."
+  nohup python3 /usr/local/bin/download_ltx23_workflow_models.py \
+    >> "$LOG_DIR/ltx23-model-download.log" 2>&1 &
+  echo $! > "$LOG_DIR/ltx23-model-download.pid"
+else
+  echo "[ltx23-wrapper] Exact workflow model download disabled."
+fi
+
 exec > >(tee -a "$LOG_DIR/ltx23-container.log") 2>&1
 
 echo "[ltx23-wrapper] Persistent ComfyUI data: $PERSIST_ROOT"
+echo "[ltx23-wrapper] Base LTX model auto-downloads: disabled"
+echo "[ltx23-wrapper] Exact workflow models: ${DOWNLOAD_WORKFLOW_MODELS:-1}"
 echo "[ltx23-wrapper] Original NVIDIA entrypoint: /opt/nvidia/nvidia_entrypoint.sh"
 echo "[ltx23-wrapper] Original command: $*"
 
