@@ -4,7 +4,7 @@ ENV LTX23_BASE_IMAGE=antilopax/ltx23:v14 \
     WORKSPACE=/workspace \
     LTX23_PERSIST_ROOT=/workspace/ComfyUI \
     ENABLE_DASHBOARD=1 \
-    DASHBOARD_PORT=8080 \
+    DASHBOARD_PORT=18080 \
     COMFY_PORT=8188 \
     JUPYTER_PORT=8888 \
     DOWNLOAD_WORKFLOW_MODELS=1 \
@@ -35,7 +35,7 @@ RUN chmod +x \
     && test -x /app/startup_unix.sh \
     && test -f /app/ComfyUI/main.py
 
-EXPOSE 8080 8188 8888
+EXPOSE 18080 8188 8888
 
 # Preserve the original Antilopax startup. The wrapper only adds persistence,
 # the dashboard, exact workflow nodes, and the exact five active workflow models.
