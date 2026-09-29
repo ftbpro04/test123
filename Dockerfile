@@ -1,5 +1,6 @@
 FROM pytorch/pytorch:2.10.0-cuda13.0-cudnn9-devel
 
+# MiniMax H3 Vast dashboard image
 ARG DEBIAN_FRONTEND=noninteractive
 ARG COMFY_REF=8d534945ebd53cff61e8def81757c6a6c1b9cf2d
 
