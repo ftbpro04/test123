@@ -1,4 +1,4 @@
-# Vast LTX 2.3 Dashboard
+# Vast LTX 2.3 — Exact Workflow Dashboard
 
 Thin Vast.ai wrapper around:
 
@@ -12,40 +12,63 @@ Published as:
 ghcr.io/ftbpro04/vast-ltx23:latest
 ```
 
-## What it preserves
+This version is tailored to `10E_I2V_triplepass_00010-audio.json`.
 
-The original image was inspected before wrapping. It uses:
+## Included custom nodes
+
+- ComfyUI-Manager
+- Civicomfy
+- ComfyUI-HuggingFace
+- ComfyUI-KJNodes
+- ComfyMath
+- ComfyUI-LTXVideo
+- RES4LYF
+- 10S-Comfy-nodes
+- rgthree-comfy
+- ComfyUI-VideoHelperSuite
+
+Workflow-specific packages with commit metadata in the JSON are pinned where practical.
+
+## Exact active model set
+
+Only these five unique files are downloaded automatically:
+
+1. `checkpoints/10Eros_v1_bf16.safetensors`
+2. `text_encoders/gemma_3_12B_it_fp8_e4m3fn.safetensors`
+3. `latent_upscale_models/ltx-2.3-spatial-upscaler-x2-1.1.safetensors`
+4. `loras/ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors`
+5. `loras/ltx23/ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors`
+
+The alternate FP8 transformer, standalone VAEs and standalone text-projection referenced by bypassed nodes are intentionally not downloaded.
+
+Antilopax's broader automatic LTX model set is disabled by default.
+
+## Persistence
+
+Mount a Vast persistent volume at:
 
 ```
-ENTRYPOINT ["/opt/nvidia/nvidia_entrypoint.sh"]
-CMD ["/app/startup_unix.sh"]
-WORKDIR /app/ComfyUI
+/workspace
 ```
 
-The wrapper chains back into that exact original startup path.
-
-## What it adds
-
-- Dashboard on port 8080
-- ComfyUI/Jupyter launch buttons
-- GPU, VRAM, temperature, power and disk status
-- live startup/dashboard logs
-- persistent `/workspace`
-- model persistence across Vast instances
-
-The wrapper redirects the base image's writable ComfyUI folders to:
+Models persist under:
 
 ```
 /workspace/ComfyUI/models
-/workspace/ComfyUI/input
-/workspace/ComfyUI/output
-/workspace/ComfyUI/user
 ```
 
-This is especially useful on Vast because large LTX checkpoints can remain on the same persistent volume instead of being downloaded again for every new instance.
+Hugging Face cache persists under:
 
-## Base model defaults
+```
+/workspace/hf-cache
+```
 
-The inspected `v14` image defaults to LTX 2.3 Distilled + Full FP8 + upscalers, with Full BF16 disabled.
+Recreating an instance with the same volume causes existing models to be skipped instead of downloaded again.
 
-See `VAST_TEMPLATE.md` for exact Vast.ai fields and a lower-bandwidth configuration.
+## Ports
+
+- 8080 — dashboard
+- 8188 — ComfyUI
+- 8888 — JupyterLab
+
+See `VAST_TEMPLATE.md` for exact Vast fields.
