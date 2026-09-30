@@ -61,5 +61,6 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ steps.owner.outputs.name }}/vast-ltx23:latest
+            ghcr.io/${{ steps.owner.outputs.name }}/vast-ltx23:cuda13-v1
           cache-from: type=gha
           cache-to: type=gha,mode=max
