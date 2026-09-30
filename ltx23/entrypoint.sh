@@ -5,8 +5,16 @@ WORKSPACE="${WORKSPACE:-/workspace}"
 COMFY_ROOT="/app/ComfyUI"
 PERSIST_ROOT="${LTX23_PERSIST_ROOT:-$WORKSPACE/ComfyUI}"
 LOG_DIR="$WORKSPACE/logs"
+DASHBOARD_PORT="${DASHBOARD_PORT:-18080}"
+COMFY_PORT="${COMFY_PORT:-8188}"
+JUPYTER_PORT="${JUPYTER_PORT:-8888}"
 
-mkdir -p "$LOG_DIR" "$PERSIST_ROOT" "$WORKSPACE/hf-cache"
+mkdir -p \
+  "$LOG_DIR" \
+  "$PERSIST_ROOT" \
+  "$WORKSPACE/hf-cache" \
+  "$WORKSPACE/torch-cache" \
+  "$WORKSPACE/triton-cache"
 
 persist_dir() {
   local name="$1"
@@ -32,54 +40,101 @@ persist_dir input
 persist_dir output
 persist_dir user
 
+# Keep startup diagnostics in one persistent log.
+exec > >(tee -a "$LOG_DIR/ltx23-container.log") 2>&1
+
+echo
+echo "=============================================================="
+echo " LTX 2.3 Vast.ai"
+echo " Antilopax v14 ComfyUI tree + CUDA 13.0 runtime"
+echo " Dashboard:  0.0.0.0:$DASHBOARD_PORT"
+echo " ComfyUI:    0.0.0.0:$COMFY_PORT"
+echo " Jupyter:    0.0.0.0:$JUPYTER_PORT"
+echo " Persistent: $PERSIST_ROOT"
+echo "=============================================================="
+
+python - <<'PY'
+import torch
+print("[runtime] Torch:", torch.__version__)
+print("[runtime] Torch CUDA:", torch.version.cuda)
+print("[runtime] CUDA available:", torch.cuda.is_available())
+if torch.cuda.is_available():
+    print("[runtime] GPU:", torch.cuda.get_device_name(0))
+PY
+
+# Dashboard watchdog. It can restart independently without ever restarting
+# the main container or ComfyUI.
 if [ "${ENABLE_DASHBOARD:-1}" != "0" ]; then
-  echo "[ltx23-wrapper] Starting dashboard watchdog on port ${DASHBOARD_PORT:-18080}..."
   (
     set +e
     while true; do
-      echo "[dashboard-watchdog] launching dashboard at $(date -Is)" >> "$LOG_DIR/ltx23-dashboard.log"
-      python3 /usr/local/bin/ltx23-dashboard.py >> "$LOG_DIR/ltx23-dashboard.log" 2>&1
+      python /usr/local/bin/ltx23-dashboard.py >> "$LOG_DIR/ltx23-dashboard.log" 2>&1
       rc=$?
-      echo "[dashboard-watchdog] dashboard exited rc=$rc; restarting in 2s" >> "$LOG_DIR/ltx23-dashboard.log"
+      echo "[dashboard-watchdog] dashboard exited rc=$rc; restart in 2s" >> "$LOG_DIR/ltx23-dashboard.log"
       sleep 2
     done
   ) &
   echo $! > "$LOG_DIR/ltx23-dashboard.pid"
 fi
 
+# Exact workflow model downloader. It downloads only missing files.
 if [[ "${DOWNLOAD_WORKFLOW_MODELS:-1}" =~ ^(1|true|yes|on)$ ]]; then
-  echo "[ltx23-wrapper] Starting exact 5-model workflow download..."
-  nohup python3 /usr/local/bin/download_ltx23_workflow_models.py \
+  nohup python /usr/local/bin/download_ltx23_workflow_models.py \
     >> "$LOG_DIR/ltx23-model-download.log" 2>&1 &
   echo $! > "$LOG_DIR/ltx23-model-download.pid"
-else
-  echo "[ltx23-wrapper] Exact workflow model download disabled."
 fi
 
-exec > >(tee -a "$LOG_DIR/ltx23-container.log") 2>&1
+# JupyterLab
+if [[ "${ENABLE_JUPYTER:-1}" =~ ^(1|true|yes|on)$ ]]; then
+  if [[ -n "${JUPYTER_TOKEN:-}" ]]; then
+    printf '%s' "$JUPYTER_TOKEN" > "$WORKSPACE/.jupyter_token"
+  elif [[ -f "$WORKSPACE/.jupyter_token" ]]; then
+    JUPYTER_TOKEN="$(cat "$WORKSPACE/.jupyter_token")"
+  else
+    JUPYTER_TOKEN="$(python - <<'PY'
+import secrets
+print(secrets.token_urlsafe(24))
+PY
+)"
+    printf '%s' "$JUPYTER_TOKEN" > "$WORKSPACE/.jupyter_token"
+  fi
+  chmod 600 "$WORKSPACE/.jupyter_token"
+  export JUPYTER_TOKEN
 
-echo "[ltx23-wrapper] Persistent ComfyUI data: $PERSIST_ROOT"
-echo "[ltx23-wrapper] Base LTX model auto-downloads: disabled"
-echo "[ltx23-wrapper] Exact workflow models: ${DOWNLOAD_WORKFLOW_MODELS:-1}"
-echo "[ltx23-wrapper] Original NVIDIA entrypoint: /opt/nvidia/nvidia_entrypoint.sh"
-
-# Vast's Docker ENTRYPOINT launch mode can occasionally supply no CMD.
-# Never allow that to make the container exit immediately.
-if [ "$#" -eq 0 ]; then
-  set -- /app/startup_unix.sh
+  nohup jupyter lab \
+    --ip=0.0.0.0 \
+    --port="$JUPYTER_PORT" \
+    --no-browser \
+    --allow-root \
+    --ServerApp.token="$JUPYTER_TOKEN" \
+    --ServerApp.password='' \
+    --ServerApp.root_dir="$WORKSPACE" \
+    >> "$LOG_DIR/jupyter.log" 2>&1 &
+  echo $! > "$LOG_DIR/jupyter.pid"
 fi
 
-echo "[ltx23-wrapper] Startup command: $*"
+cd "$COMFY_ROOT"
 
-# Keep this wrapper as PID 1. If the Antilopax startup unexpectedly exits,
-# keep the Vast instance alive so the dashboard/logs remain reachable.
+DEFAULT_ARGS=(
+  --listen 0.0.0.0
+  --port "$COMFY_PORT"
+  --disable-auto-launch
+  --cuda-malloc
+  --fast fp16_accumulation
+)
+
+echo "[comfy] Starting ComfyUI with CUDA 13.0 PyTorch runtime..."
+echo "[comfy] python main.py ${DEFAULT_ARGS[*]} ${COMFY_EXTRA_ARGS:-}"
+
 set +e
-/opt/nvidia/nvidia_entrypoint.sh "$@"
-MAIN_RC=$?
+# shellcheck disable=SC2086
+python main.py "${DEFAULT_ARGS[@]}" ${COMFY_EXTRA_ARGS:-}
+COMFY_RC=$?
 set -e
 
-echo "[ltx23-wrapper] WARNING: Antilopax startup exited with code $MAIN_RC"
-echo "[ltx23-wrapper] Keeping container alive for diagnostics instead of stopping Vast."
+echo "[comfy] ComfyUI exited with code $COMFY_RC"
+echo "[comfy] Keeping the Vast container alive so dashboard/logs stay accessible."
+echo "[comfy] This image intentionally does NOT restart ComfyUI in a loop."
 
 while true; do
   sleep 3600
