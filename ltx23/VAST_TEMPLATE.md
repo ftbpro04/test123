@@ -1,4 +1,4 @@
-# Vast.ai Template — LTX 2.3 Exact Workflow
+# Vast.ai Template — LTX 2.3 Exact Workflow / CUDA 13
 
 ## Image
 
@@ -11,14 +11,28 @@ ghcr.io/ftbpro04/vast-ltx23:latest
 Template Name:
 
 ```
-LTX 2.3 - Exact Workflow
+LTX 2.3 - Exact Workflow CUDA 13
 ```
 
 Template Description:
 
 ```
-LTX 2.3 10Eros triple-pass I2V based on antilopax/ltx23:v14 with exact workflow nodes/models, persistent storage, dashboard and Jupyter
+LTX 2.3 10Eros triple-pass I2V using the Antilopax v14 ComfyUI/LTX tree on PyTorch 2.10 + CUDA 13.0, with exact workflow nodes/models, dashboard and Jupyter
 ```
+
+## GPU / host requirement
+
+Choose a Vast offer whose **CUDA Max Supported is 13.0 or newer**.
+
+The container itself is built on:
+
+```
+PyTorch 2.10
+CUDA 13.0
+cuDNN 9
+```
+
+The Docker build contains a hard check and will fail instead of publishing if Torch is not using CUDA 13.x.
 
 ## Ports
 
@@ -28,6 +42,8 @@ TCP only:
 - `8188` — ComfyUI
 - `8888` — JupyterLab
 
+Do not expose port 8080 for this template.
+
 ## Environment Variables
 
 Recommended:
@@ -36,32 +52,23 @@ Recommended:
 WORKSPACE=/workspace
 LTX23_PERSIST_ROOT=/workspace/ComfyUI
 ENABLE_DASHBOARD=1
+ENABLE_JUPYTER=1
 DASHBOARD_PORT=18080
 COMFY_PORT=8188
 JUPYTER_PORT=8888
 DOWNLOAD_WORKFLOW_MODELS=1
 ```
 
-The image already defaults these Antilopax bulk downloads to false:
-
-```
-DOWNLOAD_LTX23_DISTILLED=false
-DOWNLOAD_LTX23_FULL_FP8=false
-DOWNLOAD_LTX23_FULL_BF16=false
-DOWNLOAD_LTX23_UPSCALERS=false
-```
-
-Do not turn those back on unless you intentionally want additional models.
-
 Optional:
 
 ```
 HF_TOKEN=<your Hugging Face token if needed>
 DASHBOARD_PASSWORD=<optional password>
+COMFY_EXTRA_ARGS=<optional additional ComfyUI arguments>
 DOWNLOAD_WORKFLOW_MODELS=0
 ```
 
-Use `DOWNLOAD_WORKFLOW_MODELS=0` only when the persistent volume already contains all five required files and you do not want the downloader to check them.
+Use `DOWNLOAD_WORKFLOW_MODELS=0` only when the persistent volume already contains all five required files.
 
 ## Launch Mode
 
@@ -74,6 +81,8 @@ Docker ENTRYPOINT
 Leave Docker ENTRYPOINT args blank.
 
 Leave On-start Script blank.
+
+This image no longer invokes Antilopax's NVIDIA entrypoint or relies on its inherited CMD. ComfyUI is launched directly by our stable entrypoint, eliminating the empty-command restart loop seen in the previous image.
 
 ## Disk / Volume
 
@@ -93,7 +102,11 @@ Approximately 62 GB total:
 - `ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors`
 - `ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors`
 
-Existing files are skipped on subsequent launches when the same `/workspace` volume is attached.
+Existing files are skipped when the same persistent `/workspace` volume is attached.
+
+## Failure behavior
+
+If ComfyUI itself exits, the container intentionally remains alive. It does **not** restart ComfyUI in a loop. The dashboard and logs stay available on port 18080 so the error can be diagnosed.
 
 ## Visibility
 
