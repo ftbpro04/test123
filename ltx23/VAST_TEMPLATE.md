@@ -3,7 +3,7 @@
 ## Image
 
 ```
-ghcr.io/ftbpro04/vast-ltx23:latest
+ghcr.io/ftbpro04/vast-ltx23:cuda13-v1
 ```
 
 ## Identification
