@@ -135,7 +135,9 @@ function renderModels(m){
 async function status(){
   try{
     const r=await fetch('/api/status',{cache:'no-store'}); const s=await r.json();
-    $('profile').textContent=s.profile||'—'; $('instance').textContent=s.instance||'Vast instance';
+    $('profile').textContent=s.profile||'—';
+    const rt=s.runtime||{};
+    $('instance').textContent=(rt.torch||rt.cuda)?`Torch ${rt.torch||'—'} · CUDA ${rt.cuda||'—'}`:(s.instance||'Vast instance');
     if(s.gpu){$('gpuName').textContent=s.gpu.name||'GPU';$('gpuUtil').textContent=`${s.gpu.utilization_pct ?? '—'}% utilization`; $('vram').textContent=s.gpu.memory_total_mb?`${(s.gpu.memory_used_mb/1024).toFixed(1)} / ${(s.gpu.memory_total_mb/1024).toFixed(1)} GB`:'—'; $('gpuTemp').textContent=s.gpu.temperature_c!=null?`${s.gpu.temperature_c} °C · ${s.gpu.power_w ?? '—'} W`:'—';}
     if(s.disk){$('disk').textContent=fmtGB(s.disk.used_mb);$('diskSub').textContent=`${fmtGB(s.disk.free_mb)} free of ${fmtGB(s.disk.total_mb)}`;}
     setSvc('comfy',s.services.comfy,s.services.comfy?'ready':'starting / unavailable');
@@ -198,6 +200,14 @@ def gpu_info() -> dict | None:
         }
     except Exception:
         return None
+
+
+def runtime_info() -> dict:
+    try:
+        import torch
+        return {"torch": str(torch.__version__), "cuda": str(torch.version.cuda or "unknown")}
+    except Exception as exc:
+        return {"torch": "unknown", "cuda": "unknown", "error": str(exc)}
 
 
 def disk_info() -> dict:
@@ -321,6 +331,7 @@ class Handler(BaseHTTPRequestHandler):
                 "base_image": BASE_IMAGE,
                 "instance": BASE_IMAGE,
                 "gpu": gpu_info(),
+                "runtime": runtime_info(),
                 "disk": disk_info(),
                 "services": {
                     "comfy": port_open(COMFY_PORT),
