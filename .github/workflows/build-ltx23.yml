@@ -28,6 +28,16 @@ jobs:
           docker system prune -af || true
           df -h
 
+      - name: Inspect Antilopax v14 runtime
+        run: |
+          docker pull antilopax/ltx23:v14
+          echo "===== IMAGE CONFIG ====="
+          docker image inspect antilopax/ltx23:v14 --format 'Entrypoint={{json .Config.Entrypoint}} Cmd={{json .Config.Cmd}}'
+          echo "===== PYTHON / TORCH ====="
+          docker run --rm --entrypoint /bin/bash antilopax/ltx23:v14 -lc 'python --version; python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.__file__)"'
+          echo "===== STARTUP SCRIPT ====="
+          docker run --rm --entrypoint /bin/bash antilopax/ltx23:v14 -lc 'sed -n "1,260p" /app/startup_unix.sh'
+
       - name: Lowercase GitHub username
         id: owner
         shell: bash
