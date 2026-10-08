@@ -39,7 +39,7 @@ Once the unknown size is resolved, budget the complete model total + desired inp
 
 Atomic rename means no second checkpoint-sized copy is needed for normal first downloads. A partial occupies the space that its final file will occupy; the free-space guard needs remaining bytes + reserve. Failed, legacy, and manually downloaded duplicate files consume extra space and appear in the audit. No automatic cleanup of legacy content is performed.
 
-Docker image size has not yet been measured locally. CI records `image-size-bytes.txt`; it is the unpacked image size, not registry transfer size. Final container-disk sizing must include that unpacked image, build/runtime overhead, and disposable caches. Compressed registry transfer size requires registry inspection after publication.
+CI run 37741032409 measured **16,333,283,351 bytes (16.33 GB / 15.21 GiB)** for the review image. This is a baseline, not the final release size. CI records `image-size-bytes.txt`; it is the unpacked image size, not registry transfer size. Final container-disk sizing must include that unpacked image, build/runtime overhead, and disposable caches. Compressed registry transfer size requires registry inspection after publication.
 
 ## Volume reuse limitation
 

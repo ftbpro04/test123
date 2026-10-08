@@ -6,15 +6,17 @@
 - Six non-selection references classified: two catalog references plus four stale execution/frontend references. No automatic catalog downloads.
 - SHA256 and exact byte-size metadata obtained for 15 files (10 author/maintainer sources, five mirrors). Model bytes were not downloaded.
 - Pinned repositories inspected. `GLSLShader` in the bypassed subgraph is included in validation; frontend-only Set/Get nodes are checked separately.
-- 13 meaningful local tests passed: graph inventory, named widget parsing, unknown loader fail-closed behavior, path/symlink traversal rejection, Range resume, ignored/invalid Range handling, hash rejection, disk guard, partial identity protection, downloader locking, zero-network reuse, duplicate supervisor refusal, and dashboard survival with a captured ComfyUI traceback.
+- 16 meaningful local tests passed: graph inventory, named widget parsing, unknown loader fail-closed behavior, path/symlink traversal rejection, Range resume, ignored/invalid Range handling, hash rejection, disk guard, partial identity protection, downloader locking, zero-network reuse, duplicate supervisor refusal, author filename/hash matching and rejection, and dashboard survival with a captured ComfyUI traceback.
 - Python compilation and shell syntax checks passed.
 
-## Not yet verified
+- Container dashboard and Jupyter smoke checks passed without a GPU; the container remained running with zero Docker restarts.
+
+## Acceptance status
 
 | Milestone | Status |
 |---|---|
-| Docker build / final CUDA assertion | Not executed locally: Docker unavailable; CI definition provided |
-| Full backend custom-node registration | Requires the built container CPU smoke test, then GPU validation |
+| Docker build / final CUDA assertion | Passed in run 37741032409: Torch 2.10.0+cu130, CUDA 13.0, cuDNN 91501; pip check passed |
+| Full backend custom-node registration | 43/47 backend types passed in run 37741032409. Four LTXVideo types blocked by removed core RoPE imports; upstream compatibility commit pinned for rerun |
 | CUDA device availability | Requires actual compatible GPU |
 | All 16 model files downloaded and hash checked | Not performed; anime size/hash unresolved |
 | Civitai source verification for six LoRAs | Blocked by HTTP 403 in this environment |
@@ -22,7 +24,7 @@
 | Vast runtime / mapped port test | Not performed; no Vast runtime was provisioned |
 | Workflow opened and all three passes generated with audio | Not performed |
 | Reattachment of real Vast storage | Not performed; fixture reuse verified locally |
-| Docker image disk size | Unknown until image builds |
+| Docker image disk size | Run 37741032409: 16,333,283,351 bytes unpacked (16.33 GB / 15.21 GiB); subsequent builds may differ |
 
 ## Findings in the previous code
 

@@ -127,7 +127,8 @@ def transfer(m, target, partials, update, received, margin):
                 raise DownloadError('SHA256 mismatch; corrupt partial removed for retry')
             os.replace(part,target);meta.unlink(missing_ok=True)
             update('Ready',expected);return
-        except (requests.RequestException, DownloadError, OSError):
+        except (requests.RequestException, DownloadError, OSError) as exc:
+            if attempt==2 and isinstance(exc,DownloadError):raise
             if attempt==2:raise DownloadError('Download failed after 3 attempts; partial retained if resumable') from None
             time.sleep(2**attempt)
 

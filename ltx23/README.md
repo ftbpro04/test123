@@ -35,6 +35,8 @@ Ten files have author/maintainer repository metadata. Five additional files have
 
 `animeflatLTX.2.3.safetensors` remains mandatory but its exact size and SHA256 are unresolved. Candidate Civitai version **2809357** could not be read (HTTP 403). At runtime the downloader can resolve that version using `CIVITAI_TOKEN`, requires exactly the selected filename, obtains the API SHA256 and exact response byte length, then downloads/verifies it. If it still cannot access the source, the result stays **15/16 or less**, with an explicit error. Access requirements have not been confirmed; a token may not resolve every access restriction.
 
+With authorized Civitai access available, run `CIVITAI_TOKEN=... python verify_author_sources.py --write` from this folder to resolve author metadata without downloading weights. Supply the token through your environment or secret manager; do not commit it. The verifier refuses filename or mirror-hash mismatches. Regenerate the human-readable model report after successful verification.
+
 Do not call this a ready-to-use complete pack until all source checks and real GPU tests pass. `python /opt/ltx23/check_build.py --require-sources` intentionally blocks release while author-source verification remains unresolved.
 
 ## Dashboard and access

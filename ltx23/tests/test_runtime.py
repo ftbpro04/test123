@@ -131,3 +131,18 @@ class SupervisorTests(unittest.TestCase):
                 self.assertIsNone(state['public_ports']['comfy'])
             finally:
                 p.terminate();p.wait(timeout=15)
+
+class AuthorSourceTests(unittest.TestCase):
+    def test_matching_author_hash_verifies_mirror(self):
+        from verify_author_sources import verify
+        m={'filename':'a.safetensors','sha256':'a'*64,'expected_size':123,'source':'huggingface'}
+        data={'files':[{'name':'a.safetensors','hashes':{'SHA256':'A'*64}}]}
+        self.assertTrue(verify(m,data)['source_verified'])
+    def test_wrong_filename_refused(self):
+        from verify_author_sources import verify
+        with self.assertRaisesRegex(dm.DownloadError,'filename'):
+            verify({'filename':'a.safetensors'},{'files':[{'name':'b.safetensors'}]})
+    def test_different_author_hash_never_replaces_mirror(self):
+        from verify_author_sources import verify
+        with self.assertRaisesRegex(dm.DownloadError,'differs'):
+            verify({'filename':'a.safetensors','sha256':'a'*64},{'files':[{'name':'a.safetensors','hashes':{'SHA256':'b'*64}}]})

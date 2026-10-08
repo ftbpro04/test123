@@ -74,7 +74,7 @@
     },
     {
       "repo": "Lightricks/ComfyUI-LTXVideo",
-      "commit": "2acf7af8991f33b5cc06ec26753cb6e88e057d04",
+      "commit": "548a39373bc2fdb880a233944e4621efb1a8950e",
       "directory": "ComfyUI-LTXVideo",
       "workflow_types": [
         "LTXAddVideoICLoRAGuide",
@@ -86,7 +86,7 @@
         "2acf7af8991f33b5cc06ec26753cb6e88e057d04",
         "82bd963cdeb66d023bed8c99324a307020907ef8"
       ],
-      "pin_basis": "existing ComfyUI pin or workflow commit"
+      "pin_basis": "Upstream core RoPE compatibility fix; original workflow pin fails import against pinned ComfyUI. CPU registration CI required."
     },
     {
       "repo": "rgthree/rgthree-comfy",
