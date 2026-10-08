@@ -18,13 +18,18 @@ ENV PYTHONUNBUFFERED=1 \
     HUGGINGFACE_HUB_CACHE=/tmp/huggingface/hub \
     TORCH_HOME=/tmp/torch-cache \
     TRITON_CACHE_DIR=/tmp/triton-cache \
-    LTX23_BASE_IMAGE="Clean ComfyUI + PyTorch 2.10 CUDA 13.0"
+    LTX23_BASE_IMAGE="Clean ComfyUI + PyTorch 2.10 CUDA 13.0" \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       git git-lfs curl wget aria2 rsync unzip jq ffmpeg \
-      build-essential ninja-build cmake ca-certificates tini \
+      build-essential ninja-build cmake ca-certificates tini python3-venv \
     && git lfs install \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python -m venv --system-site-packages /opt/venv \
+    && /opt/venv/bin/python -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
 WORKDIR /opt
 RUN git clone https://github.com/Comfy-Org/ComfyUI.git \
