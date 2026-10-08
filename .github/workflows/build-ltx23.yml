@@ -58,3 +58,50 @@ jobs:
             ghcr.io/${{ steps.owner.outputs.name }}/vast-ltx23:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Smoke test published image
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="ghcr.io/${{ steps.owner.outputs.name }}/vast-ltx23:clean-cuda13-v2"
+          docker pull "$IMAGE"
+
+          echo "===== CUDA userspace check ====="
+          docker run --rm --entrypoint /bin/bash "$IMAGE" -lc '
+            python - <<PY
+import torch
+print("torch", torch.__version__)
+print("torch_cuda", torch.version.cuda)
+assert str(torch.version.cuda).startswith("13."), torch.version.cuda
+PY
+          '
+
+          echo "===== Landing-page startup check ====="
+          CID="$(docker run -d             -e DOWNLOAD_WORKFLOW_MODELS=0             -e ENABLE_JUPYTER=0             -e DASHBOARD_PORT=18080             -e COMFY_PORT=8188             -p 18080:18080             "$IMAGE")"
+          trap 'docker logs "$CID" || true; docker rm -f "$CID" >/dev/null 2>&1 || true' EXIT
+
+          OK=0
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18080/api/health >/dev/null; then
+              OK=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$OK" -ne 1 ]; then
+            echo "Dashboard health endpoint never became reachable."
+            docker logs "$CID" || true
+            exit 1
+          fi
+
+          curl -fsS http://127.0.0.1:18080/api/health
+          echo
+          echo "Landing page smoke test passed."
+
+      - name: Show published image size
+        shell: bash
+        run: |
+          IMAGE="ghcr.io/${{ steps.owner.outputs.name }}/vast-ltx23:clean-cuda13-v2"
+          docker image inspect "$IMAGE" --format 'ImageSizeBytes={{.Size}}'
+          docker images "$IMAGE"
