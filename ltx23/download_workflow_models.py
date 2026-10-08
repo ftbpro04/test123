@@ -12,13 +12,13 @@ from huggingface_hub import get_hf_file_metadata, hf_hub_download, hf_hub_url
 from tqdm.auto import tqdm as base_tqdm
 
 WORKSPACE = Path(os.getenv("WORKSPACE", "/workspace"))
-MODELS_ROOT = Path(os.getenv("LTX23_MODELS_ROOT", "/workspace/ComfyUI/models"))
+PERSIST_ROOT = Path(os.getenv("LTX23_PERSIST_ROOT", "/workspace/ltx23-data"))
+MODELS_ROOT = Path(os.getenv("LTX23_MODELS_ROOT", str(PERSIST_ROOT / "models")))
+DOWNLOAD_ROOT = PERSIST_ROOT / ".downloads"
 LOG_DIR = WORKSPACE / "logs"
 STATUS_FILE = LOG_DIR / "ltx23-model-status.json"
 HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN")
 
-# Only the five UNIQUE files used by ACTIVE nodes in
-# 10E_I2V_triplepass_00010-audio.json.
 MODELS = [
     {
         "name": "10Eros LTX 2.3 BF16 checkpoint",
@@ -58,12 +58,7 @@ def now() -> str:
 def write_status(rows: list[dict]) -> None:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     ready = sum(1 for x in rows if x["status"] in {"present", "downloaded", "ready"})
-    payload = {
-        "updated_at": now(),
-        "ready": ready,
-        "total": len(rows),
-        "models": rows,
-    }
+    payload = {"updated_at": now(), "ready": ready, "total": len(rows), "models": rows}
     tmp = STATUS_FILE.with_name(f"{STATUS_FILE.name}.{os.getpid()}.tmp")
     tmp.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     os.replace(tmp, STATUS_FILE)
@@ -106,56 +101,52 @@ def progress_class(index: int, rows: list[dict]):
             except Exception:
                 pass
             return super().close()
-
     return DashboardTqdm
 
-def link_or_copy(src: Path, dst: Path) -> None:
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    if dst.exists():
-        return
-    try:
-        os.link(src, dst)
-    except OSError:
-        shutil.copy2(src, dst)
+def target_is_complete(target: Path, expected_size: int | None) -> bool:
+    if not target.exists() or not target.is_file():
+        return False
+    size = target.stat().st_size
+    if expected_size:
+        return size == expected_size
+    return size > 1024 * 1024
 
 def main() -> int:
     MODELS_ROOT.mkdir(parents=True, exist_ok=True)
+    DOWNLOAD_ROOT.mkdir(parents=True, exist_ok=True)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     rows: list[dict] = []
     for m in MODELS:
         rows.append({
-            "name": m["name"],
-            "repo": m["repo"],
-            "filename": m["filename"],
-            "target": str(MODELS_ROOT / m["target"]),
-            "status": "queued",
-            "size_bytes": None,
-            "downloaded_bytes": 0,
-            "updated_at": now(),
+            "name": m["name"], "repo": m["repo"], "filename": m["filename"],
+            "target": str(MODELS_ROOT / m["target"]), "status": "queued",
+            "size_bytes": None, "downloaded_bytes": 0, "updated_at": now(),
         })
     write_status(rows)
 
     failures = 0
     for i, m in enumerate(MODELS):
         target = MODELS_ROOT / m["target"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        expected = remote_size(m)
+        rows[i]["size_bytes"] = expected
+        write_status(rows)
 
-        size = remote_size(m)
-        if size:
-            rows[i]["size_bytes"] = size
-            write_status(rows)
-
-        if target.exists() and target.stat().st_size > 1024 * 1024:
+        if target_is_complete(target, expected):
             actual = target.stat().st_size
-            rows[i].update({
-                "status": "present",
-                "downloaded_bytes": actual,
-                "size_bytes": size or actual,
-                "updated_at": now(),
-            })
+            rows[i].update(status="present", downloaded_bytes=actual,
+                           size_bytes=expected or actual, updated_at=now())
             write_status(rows)
             print(f"[models] SKIP {m['name']} -> {target}", flush=True)
             continue
+
+        if target.exists():
+            print(f"[models] Removing incomplete target: {target}", flush=True)
+            target.unlink(missing_ok=True)
+
+        slot = DOWNLOAD_ROOT / f"model-{i}"
+        slot.mkdir(parents=True, exist_ok=True)
 
         rows[i]["status"] = "downloading"
         rows[i]["updated_at"] = now()
@@ -167,16 +158,18 @@ def main() -> int:
                 repo_id=m["repo"],
                 filename=m["filename"],
                 token=HF_TOKEN,
+                local_dir=str(slot),
                 tqdm_class=progress_class(i, rows),
             ))
-            link_or_copy(cached, target)
+            if not cached.exists():
+                raise RuntimeError(f"Downloaded file not found: {cached}")
+
+            os.replace(cached, target)
             actual = target.stat().st_size
-            rows[i].update({
-                "status": "downloaded",
-                "downloaded_bytes": actual,
-                "size_bytes": size or actual,
-                "updated_at": now(),
-            })
+            shutil.rmtree(slot, ignore_errors=True)
+
+            rows[i].update(status="downloaded", downloaded_bytes=actual,
+                           size_bytes=expected or actual, updated_at=now())
             write_status(rows)
             print(f"[models] DONE {m['name']} -> {target}", flush=True)
         except Exception as exc:
@@ -186,6 +179,13 @@ def main() -> int:
             rows[i]["updated_at"] = now()
             write_status(rows)
             print(f"[models] ERROR {m['name']}: {exc}", flush=True)
+
+    # Remove empty download root when everything is complete.
+    try:
+        if DOWNLOAD_ROOT.exists() and not any(DOWNLOAD_ROOT.iterdir()):
+            DOWNLOAD_ROOT.rmdir()
+    except Exception:
+        pass
 
     if failures:
         print(f"[models] Finished with {failures} failure(s). Re-running resumes.", flush=True)
