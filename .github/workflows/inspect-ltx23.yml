@@ -1,46 +1,9 @@
-name: Inspect Antilopax LTX 2.3 v14
-
+name: Deprecated LTX inspection
 on:
-  push:
-    paths:
-      - ".github/workflows/inspect-ltx23.yml"
   workflow_dispatch:
 
 jobs:
-  inspect:
+  info:
     runs-on: ubuntu-24.04
     steps:
-      - name: Pull and inspect image
-        run: |
-          set -euxo pipefail
-          docker pull antilopax/ltx23:v14
-          echo "===== IMAGE CONFIG ====="
-          docker image inspect antilopax/ltx23:v14 --format 'Entrypoint={{json .Config.Entrypoint}} Cmd={{json .Config.Cmd}} Env={{json .Config.Env}}'
-          echo "===== OS / PYTHON / TORCH ====="
-          docker run --rm --entrypoint /bin/bash antilopax/ltx23:v14 -lc '
-            cat /etc/os-release
-            echo "--- python ---"
-            which python || true
-            which python3 || true
-            python --version || true
-            python3 --version || true
-            echo "--- torch ---"
-            python - <<PY
-import torch, sys
-print("python", sys.version)
-print("torch", torch.__version__)
-print("torch cuda", torch.version.cuda)
-print("torch file", torch.__file__)
-PY
-            echo "--- pip key packages ---"
-            python -m pip list | grep -Ei "torch|triton|xformers|sage|flash|comfy|ltx|transformers|accelerate|diffusers" || true
-            echo "--- startup_unix.sh ---"
-            sed -n "1,260p" /app/startup_unix.sh
-            echo "--- app listing ---"
-            find /app -maxdepth 2 -type d | sort | head -200
-            echo "--- site packages ---"
-            python - <<PY
-import site
-print(site.getsitepackages())
-PY
-          '
+      - run: echo "Deprecated. The clean LTX image no longer depends on Antilopax runtime inspection."
