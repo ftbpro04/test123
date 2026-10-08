@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import importlib.metadata
 import json
 from pathlib import Path
@@ -9,6 +10,9 @@ from workflow_model_parser import audit
 def main():
     p=argparse.ArgumentParser();p.add_argument('--require-sources',action='store_true');p.add_argument('--runtime',action='store_true');a=p.parse_args()
     m=read_json(APP/'model_manifest.json');w=read_json(APP/'workflows/ltx23-linux.json');result,_=audit(w)
+    assert hashlib.sha256((APP/'workflows/original.json').read_bytes()).hexdigest()==m['workflow_sha256']
+    for supplied,parsed in zip(sorted(m['models'],key=lambda x:x['destination']),sorted(result['models'],key=lambda x:x['destination'])):
+        assert all(supplied[k]==parsed[k] for k in ('filename','category','selection','destination'))
     assert len(m['models'])==16 and len({x['destination'] for x in m['models']})==16
     assert {x['destination'] for x in m['models']}=={x['destination'] for x in result['models']}
     unresolved=[x['filename'] for x in m['models'] if not x.get('source_verified') or not x.get('sha256') or not x.get('expected_size')]
