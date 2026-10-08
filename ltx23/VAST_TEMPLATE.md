@@ -1,26 +1,22 @@
-# Vast.ai Template — LTX 2.3 CLEAN CUDA 13
+# Vast settings — use only after a successful build and approved publication
 
-## Image
+No new image is published by this change. **Do not enter a proposed tag in Vast yet.** The existing `latest`/`clean-cuda13-v2` tags do not contain this unmerged review branch.
 
-```
-ghcr.io/ftbpro04/vast-ltx23:clean-cuda13-v2
-```
+| Setting | Value |
+|---|---|
+| Template name | LTX 2.3 Exact Workflow - CUDA 13 |
+| Image | Pending successful validation and separately authorized publication |
+| Proposed future version tag | `ghcr.io/ftbpro04/vast-ltx23:cuda13-v3` — not available/tested |
+| Launch mode | Docker ENTRYPOINT |
+| ENTRYPOINT args | Blank |
+| On-start script | Blank |
+| Exposed TCP ports | `18080`, `8188`, `8888` |
+| Persistent volume mount | `/workspace` (configure actual volume attachment) |
+| Host filter | CUDA Max Supported >= 13.0 |
+| Container disk | Must be finalized from measured image size; provisional budget 40 GB |
+| Persistent disk | Must be finalized after the remaining model size is resolved; provisional budget 200 GB |
 
-## Host requirement
-
-Choose a Vast offer with CUDA Max Supported 13.0 or newer.
-
-## Ports
-
-TCP only:
-
-- 18080 — Dashboard
-- 8188 — ComfyUI
-- 8888 — JupyterLab
-
-## Environment
-
-```
+```text
 WORKSPACE=/workspace
 LTX23_PERSIST_ROOT=/workspace/ltx23-data
 ENABLE_DASHBOARD=1
@@ -31,50 +27,27 @@ JUPYTER_PORT=8888
 DOWNLOAD_WORKFLOW_MODELS=1
 ```
 
-Optional:
+Optional: `HF_TOKEN`, `CIVITAI_TOKEN`, `JUPYTER_TOKEN`, `DASHBOARD_PASSWORD`, `COMFY_EXTRA_ARGS`. The anime LoRA metadata may need `CIVITAI_TOKEN`; exact access requirements remain unverified. No performance flags are added by default. `--cpu` is for CI registration tests only.
 
-```
-HF_TOKEN=<token if required>
-DASHBOARD_PASSWORD=<optional>
-COMFY_EXTRA_ARGS=<optional>
-```
+Vast mappings normally expose `VAST_TCP_PORT_18080`, `VAST_TCP_PORT_8188`, `VAST_TCP_PORT_8888`, and `PUBLIC_IPADDR`. The dashboard does not assume internal ports equal public ports. For a custom proxy, explicit `COMFY_PUBLIC_URL` and `JUPYTER_PUBLIC_URL` are supported.
 
-## Launch mode
+## Storage sizing
 
-Docker ENTRYPOINT
+15 known files: **100,723,767,566 bytes = 100.724 GB = 93.806 GiB**. Full total = this subtotal plus the exact size of `animeflatLTX.2.3.safetensors`, currently unknown. This is not an exact 16-file total. See MODEL_REPORT.md.
 
-Leave ENTRYPOINT args blank.
-Leave On-start Script blank.
+Once the unknown size is resolved, budget the complete model total + desired input/output capacity + at least 10 GiB free reserve. A practical starting output allowance is 50 GiB. Round up to the volume sizes offered. 200 GB is provisional, not a measured requirement or guarantee. The volume cannot be resized after creation according to Vast's documentation.
 
-## Storage
+Atomic rename means no second checkpoint-sized copy is needed for normal first downloads. A partial occupies the space that its final file will occupy; the free-space guard needs remaining bytes + reserve. Failed, legacy, and manually downloaded duplicate files consume extra space and appear in the audit. No automatic cleanup of legacy content is performed.
 
-Container disk: 40–50 GB.
+Docker image size has not yet been measured locally. CI records `image-size-bytes.txt`; it is the unpacked image size, not registry transfer size. Final container-disk sizing must include that unpacked image, build/runtime overhead, and disposable caches. Compressed registry transfer size requires registry inspection after publication.
 
-Persistent volume: 100 GB minimum, 150 GB recommended.
-Mount the volume at /workspace.
+## Volume reuse limitation
 
-Only these directories are persistent under /workspace/ltx23-data:
+Vast currently offers **local volumes tied to one physical machine**. You may reattach to another compatible instance on that same machine. You cannot attach that volume directly to a different physical machine. For a different machine, copy data to a volume there using Vast's supported volume-copy flow, then preserve `ltx23-data/` at the mount root. Copying incurs data transfer; the template cannot make cross-machine migration free.
 
-- models
-- input
-- output
-- user
+Official documentation: https://docs.vast.ai/guides/instances/storage/volumes
+Networking documentation: https://docs.vast.ai/documentation/instances/connect/networking
 
-Hugging Face, Torch and Triton caches are NOT stored persistently.
+## Real GPU acceptance still required
 
-The automatic downloader keeps temporary partial downloads under
-/workspace/ltx23-data/.downloads and removes each temporary directory after
-the corresponding model is moved into its final models path.
-
-## Exact models
-
-Only the five active workflow files are downloaded:
-
-- 10Eros_v1_bf16.safetensors
-- gemma_3_12B_it_fp8_e4m3fn.safetensors
-- ltx-2.3-spatial-upscaler-x2-1.1.safetensors
-- ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors
-- ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors
-
-Do not reuse the old /workspace/ComfyUI persistent folder from previous
-LTX template generations.
+After a validated image is published: attach the volume, confirm dashboard and Jupyter, check runtime reports Torch 2.10.x / CUDA 13.x / CUDA available true, resolve all 16 models, inspect actual node-registration validation, upload the input image, open the normalized workflow, and run a small non-sensitive generation. Verify audio and all three passes. Test disabled LoRAs and alternate model loaders. Restart and check `Downloaded this launch: 0` with all models verified. These tests have not been claimed as complete.

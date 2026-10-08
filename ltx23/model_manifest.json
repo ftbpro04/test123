@@ -1,0 +1,602 @@
+{
+  "schema_version": 1,
+  "workflow_sha256": "d165cbc61a51ed7641c8f06ec2073661d2f57f230aa84cf8aee92402c6e55f1d",
+  "models": [
+    {
+      "filename": "10Eros_v1_bf16.safetensors",
+      "category": "checkpoints",
+      "selection": "10Eros_v1_bf16.safetensors",
+      "destination": "checkpoints/10Eros_v1_bf16.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 616,
+          "node_type": "LTXAVTextEncoderLoader",
+          "field": "widgets_values/1",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "10Eros_v1_bf16.safetensors",
+          "selection": "10Eros_v1_bf16.safetensors"
+        },
+        {
+          "graph": "root",
+          "node_id": 617,
+          "node_type": "LTXVAudioVAELoader",
+          "field": "widgets_values/0",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "10Eros_v1_bf16.safetensors",
+          "selection": "10Eros_v1_bf16.safetensors"
+        },
+        {
+          "graph": "root",
+          "node_id": 646,
+          "node_type": "CheckpointLoaderSimple",
+          "field": "widgets_values/0",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "10Eros_v1_bf16.safetensors",
+          "selection": "10Eros_v1_bf16.safetensors"
+        }
+      ],
+      "expected_size": 46139885510,
+      "sha256": "b4b3498eeafa4d52fab5222776e4fe8821787d11fff39de867b919c83e916d35",
+      "source_verified": true,
+      "reason": "LTXAVTextEncoderLoader node 616 [A]; LTXVAudioVAELoader node 617 [A]; CheckpointLoaderSimple node 646 [A]",
+      "source": "huggingface",
+      "repo_id": "TenStrip/LTX2.3-10Eros",
+      "repo_filename": "10Eros_v1_bf16.safetensors",
+      "revision": "84a05a13610d78dbe4340d1be23fd8185e10f697",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/TenStrip/LTX2.3-10Eros/blob/84a05a13610d78dbe4340d1be23fd8185e10f697/10Eros_v1_bf16.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "10Eros_v1_fp8_transformer.safetensors",
+      "category": "diffusion_models",
+      "selection": "10Eros_v1_fp8_transformer.safetensors",
+      "destination": "diffusion_models/10Eros_v1_fp8_transformer.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 513,
+          "node_type": "UNETLoader",
+          "field": "widgets_values/0",
+          "classification": "B",
+          "mode": 4,
+          "enabled": true,
+          "original_selection": "10Eros_v1_fp8_transformer.safetensors",
+          "selection": "10Eros_v1_fp8_transformer.safetensors"
+        }
+      ],
+      "expected_size": 29562341328,
+      "sha256": "e3b0f97f091d26ff2d93229caac7114eec31742e3c6b14aa36ed2a04dae088ed",
+      "source_verified": true,
+      "reason": "UNETLoader node 513 [B]",
+      "source": "huggingface",
+      "repo_id": "TenStrip/LTX2.3-10Eros",
+      "repo_filename": "10Eros_v1_fp8_transformer.safetensors",
+      "revision": "84a05a13610d78dbe4340d1be23fd8185e10f697",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/TenStrip/LTX2.3-10Eros/blob/84a05a13610d78dbe4340d1be23fd8185e10f697/10Eros_v1_fp8_transformer.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
+      "category": "latent_upscale_models",
+      "selection": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
+      "destination": "latent_upscale_models/ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 587,
+          "node_type": "LatentUpscaleModelLoader",
+          "field": "widgets_values/0",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
+          "selection": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors"
+        }
+      ],
+      "expected_size": 995743560,
+      "sha256": "5f416311fa8172b65af67530758964708d29a317b830d689a51143b7f91913ed",
+      "source_verified": true,
+      "reason": "LatentUpscaleModelLoader node 587 [A]",
+      "source": "huggingface",
+      "repo_id": "Lightricks/LTX-2.3",
+      "repo_filename": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
+      "revision": "3c6a4e66e5d0a684231950b9c74dd4ded7b6fadc",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/Lightricks/LTX-2.3/blob/3c6a4e66e5d0a684231950b9c74dd4ded7b6fadc/ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors",
+      "category": "loras",
+      "selection": "DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors",
+      "destination": "loras/DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 557,
+          "node_type": "Power Lora Loader (rgthree)",
+          "field": "widgets_values/4/lora",
+          "classification": "C",
+          "mode": 0,
+          "enabled": false,
+          "original_selection": "DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors",
+          "selection": "DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors"
+        }
+      ],
+      "expected_size": 805412928,
+      "sha256": "a741c30110cfda9f13f0cbcaf97649f18a53adc05e31ec745f215994956f4e0f",
+      "source_verified": false,
+      "reason": "Power Lora Loader (rgthree) node 557 [C]",
+      "source": "huggingface",
+      "repo_id": "Fredjs/cfy",
+      "repo_filename": "DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors",
+      "revision": "5ca93963a2480da6ff57dd9cc4328cf7b338c441",
+      "provenance": "mirror_only; author hash not verified",
+      "evidence_url": "https://huggingface.co/Fredjs/cfy/blob/5ca93963a2480da6ff57dd9cc4328cf7b338c441/DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors",
+      "author_page": "https://civitai.com/models/2668916?modelVersionId=2996907",
+      "civitai_version_id": 2996907,
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "Kissing_Lora_2000.safetensors",
+      "category": "loras",
+      "selection": "Kissing_Lora_2000.safetensors",
+      "destination": "loras/Kissing_Lora_2000.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 557,
+          "node_type": "Power Lora Loader (rgthree)",
+          "field": "widgets_values/8/lora",
+          "classification": "C",
+          "mode": 0,
+          "enabled": false,
+          "original_selection": "Kissing_Lora_2000.safetensors",
+          "selection": "Kissing_Lora_2000.safetensors"
+        }
+      ],
+      "expected_size": 1348024144,
+      "sha256": "4b33a0dbc1b98a5df7c76b96f37b87e528243667df91b4c4c36f01e5f9dbf7a5",
+      "source_verified": false,
+      "reason": "Power Lora Loader (rgthree) node 557 [C]",
+      "source": "huggingface",
+      "repo_id": "Fredjs/cfy",
+      "repo_filename": "Kissing_Lora_2000.safetensors",
+      "revision": "5ca93963a2480da6ff57dd9cc4328cf7b338c441",
+      "provenance": "mirror_only; author hash not verified",
+      "evidence_url": "https://huggingface.co/Fredjs/cfy/blob/5ca93963a2480da6ff57dd9cc4328cf7b338c441/Kissing_Lora_2000.safetensors",
+      "author_page": "https://civitai.com/models/2609418?modelVersionId=2929984",
+      "civitai_version_id": 2929984,
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "LTX 2.3 - Twerking.safetensors",
+      "category": "loras",
+      "selection": "LTX 2.3 - Twerking.safetensors",
+      "destination": "loras/LTX 2.3 - Twerking.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 557,
+          "node_type": "Power Lora Loader (rgthree)",
+          "field": "widgets_values/6/lora",
+          "classification": "C",
+          "mode": 0,
+          "enabled": false,
+          "original_selection": "LTX 2.3 - Twerking.safetensors",
+          "selection": "LTX 2.3 - Twerking.safetensors"
+        }
+      ],
+      "expected_size": 654446048,
+      "sha256": "f844e1d7d3de54b0683dd222a24220c2a6dda6923d860836ce02380924be204a",
+      "source_verified": false,
+      "reason": "Power Lora Loader (rgthree) node 557 [C]",
+      "source": "huggingface",
+      "repo_id": "Jon1337228/bwj",
+      "repo_filename": "LTX 2.3 - Twerking.safetensors",
+      "revision": "ff9549187f13f8a09e34dd299a223c54ab698784",
+      "provenance": "mirror_only; author hash not verified",
+      "evidence_url": "https://huggingface.co/Jon1337228/bwj/blob/ff9549187f13f8a09e34dd299a223c54ab698784/LTX 2.3 - Twerking.safetensors",
+      "author_page": "https://civitai.com/models/2702525?modelVersionId=3034886",
+      "civitai_version_id": 3034886,
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors",
+      "category": "loras",
+      "selection": "LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors",
+      "destination": "loras/LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 557,
+          "node_type": "Power Lora Loader (rgthree)",
+          "field": "widgets_values/5/lora",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors",
+          "selection": "LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors"
+        }
+      ],
+      "expected_size": 805412760,
+      "sha256": "1f7c87052d44087e17630b7075d8dfd8205c17ce5e7d3bcbeae11af2102c88db",
+      "source_verified": false,
+      "reason": "Power Lora Loader (rgthree) node 557 [A]",
+      "source": "huggingface",
+      "repo_id": "Fredjs/cfy",
+      "repo_filename": "LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors",
+      "revision": "5ca93963a2480da6ff57dd9cc4328cf7b338c441",
+      "provenance": "mirror_only; author hash not verified",
+      "evidence_url": "https://huggingface.co/Fredjs/cfy/blob/5ca93963a2480da6ff57dd9cc4328cf7b338c441/LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors",
+      "author_page": "https://civitai.com/models/2497207?modelVersionId=3025398",
+      "civitai_version_id": 3025398,
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "animeflatLTX.2.3.safetensors",
+      "category": "loras",
+      "selection": "animeflatLTX.2.3.safetensors",
+      "destination": "loras/animeflatLTX.2.3.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 557,
+          "node_type": "Power Lora Loader (rgthree)",
+          "field": "widgets_values/7/lora",
+          "classification": "C",
+          "mode": 0,
+          "enabled": false,
+          "original_selection": "animeflatLTX.2.3.safetensors",
+          "selection": "animeflatLTX.2.3.safetensors"
+        }
+      ],
+      "expected_size": null,
+      "sha256": null,
+      "source_verified": false,
+      "reason": "Power Lora Loader (rgthree) node 557 [C]",
+      "author_page": "https://civitai.com/models/1952560?modelVersionId=2809357",
+      "civitai_version_id": 2809357,
+      "source": "civitai",
+      "provenance": "candidate version identified; API returned HTTP 403; runtime exact filename and SHA256 verification required",
+      "auth": "CIVITAI_TOKEN may be required; access not verified"
+    },
+    {
+      "filename": "LTX2-i2v-SexyMove_test000006000.safetensors",
+      "category": "loras",
+      "selection": "ltx/LTX2-i2v-SexyMove_test000006000.safetensors",
+      "destination": "loras/ltx/LTX2-i2v-SexyMove_test000006000.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 557,
+          "node_type": "Power Lora Loader (rgthree)",
+          "field": "widgets_values/3/lora",
+          "classification": "C",
+          "mode": 0,
+          "enabled": false,
+          "original_selection": "ltx\\LTX2-i2v-SexyMove_test000006000.safetensors",
+          "selection": "ltx/LTX2-i2v-SexyMove_test000006000.safetensors"
+        }
+      ],
+      "expected_size": 616948944,
+      "sha256": "02477999c3372335efa04bfbb5f2abfb733647230b6049197a17e9ac5d17afe9",
+      "source_verified": true,
+      "reason": "Power Lora Loader (rgthree) node 557 [C]",
+      "source": "huggingface",
+      "repo_id": "TenStrip/LTX2",
+      "repo_filename": "LTX2-i2v-SexyMove_test000006000.safetensors",
+      "revision": "7bc4433709e00e3f522cdcc30f9e72db5058298d",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/TenStrip/LTX2/blob/7bc4433709e00e3f522cdcc30f9e72db5058298d/LTX2-i2v-SexyMove_test000006000.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "LTX2.3_reasoning_I2V_V3.safetensors",
+      "category": "loras",
+      "selection": "ltx23/LTX2.3_reasoning_I2V_V3.safetensors",
+      "destination": "loras/ltx23/LTX2.3_reasoning_I2V_V3.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 557,
+          "node_type": "Power Lora Loader (rgthree)",
+          "field": "widgets_values/2/lora",
+          "classification": "C",
+          "mode": 0,
+          "enabled": false,
+          "original_selection": "ltx23\\LTX2.3_reasoning_I2V_V3.safetensors",
+          "selection": "ltx23/LTX2.3_reasoning_I2V_V3.safetensors"
+        }
+      ],
+      "expected_size": 485451280,
+      "sha256": "150ec404e517562a8e0692f4a9401c740cc0199793dc608d168490ba2d958203",
+      "source_verified": false,
+      "reason": "Power Lora Loader (rgthree) node 557 [C]",
+      "source": "huggingface",
+      "repo_id": "Fredjs/cfy",
+      "repo_filename": "LTX2.3_reasoning_I2V_V3.safetensors",
+      "revision": "5ca93963a2480da6ff57dd9cc4328cf7b338c441",
+      "provenance": "mirror_only; author hash not verified",
+      "evidence_url": "https://huggingface.co/Fredjs/cfy/blob/5ca93963a2480da6ff57dd9cc4328cf7b338c441/LTX2.3_reasoning_I2V_V3.safetensors",
+      "author_page": "https://civitai.com/models/2497207?modelVersionId=2848299",
+      "civitai_version_id": 2848299,
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
+      "category": "loras",
+      "selection": "ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
+      "destination": "loras/ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 518,
+          "node_type": "LoraLoaderModelOnly",
+          "field": "widgets_values/0",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
+          "selection": "ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors"
+        },
+        {
+          "graph": "root",
+          "node_id": 517,
+          "node_type": "LoraLoaderModelOnly",
+          "field": "widgets_values/0",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
+          "selection": "ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors"
+        }
+      ],
+      "expected_size": 662072824,
+      "sha256": "e970f64a2ce5469491fb1714a3fa72c8b606fa82affff0531e836dbc91d31f34",
+      "source_verified": true,
+      "reason": "LoraLoaderModelOnly node 518 [A]; LoraLoaderModelOnly node 517 [A]",
+      "source": "huggingface",
+      "repo_id": "SulphurAI/Sulphur-2-base",
+      "repo_filename": "distill_loras/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
+      "revision": "65587bbb38c700622f9434a16e732c8b280c115e",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/SulphurAI/Sulphur-2-base/blob/65587bbb38c700622f9434a16e732c8b280c115e/distill_loras/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
+      "category": "loras",
+      "selection": "ltx23/ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
+      "destination": "loras/ltx23/ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 643,
+          "node_type": "LTXICLoRALoaderModelOnly",
+          "field": "widgets_values/0",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "ltx23/ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
+          "selection": "ltx23/ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors"
+        }
+      ],
+      "expected_size": 1308756416,
+      "sha256": "36721b3988c468afbec2f5bc52eb534fc6a3398fcf150303eba24f27d9da2974",
+      "source_verified": true,
+      "reason": "LTXICLoRALoaderModelOnly node 643 [A]",
+      "source": "huggingface",
+      "repo_id": "Alissonerdx/LTX-LoRAs",
+      "repo_filename": "ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
+      "revision": "4294770e85288d5cc1b21e62f08780f7607ab612",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/Alissonerdx/LTX-LoRAs/blob/4294770e85288d5cc1b21e62f08780f7607ab612/ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "gemma_3_12B_it_fp8_e4m3fn.safetensors",
+      "category": "text_encoders",
+      "selection": "gemma_3_12B_it_fp8_e4m3fn.safetensors",
+      "destination": "text_encoders/gemma_3_12B_it_fp8_e4m3fn.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 616,
+          "node_type": "LTXAVTextEncoderLoader",
+          "field": "widgets_values/0",
+          "classification": "A",
+          "mode": 0,
+          "enabled": true,
+          "original_selection": "gemma_3_12B_it_fp8_e4m3fn.safetensors",
+          "selection": "gemma_3_12B_it_fp8_e4m3fn.safetensors"
+        },
+        {
+          "graph": "root",
+          "node_id": 516,
+          "node_type": "DualCLIPLoader",
+          "field": "widgets_values/0",
+          "classification": "B",
+          "mode": 4,
+          "enabled": true,
+          "original_selection": "gemma_3_12B_it_fp8_e4m3fn.safetensors",
+          "selection": "gemma_3_12B_it_fp8_e4m3fn.safetensors"
+        }
+      ],
+      "expected_size": 13210008986,
+      "sha256": "38c8ca98d01afc93a04f9fb18255755884b9eb52b7b40080076e9c892609751b",
+      "source_verified": true,
+      "reason": "LTXAVTextEncoderLoader node 616 [A]; DualCLIPLoader node 516 [B]",
+      "source": "huggingface",
+      "repo_id": "GitMylo/LTX-2-comfy_gemma_fp8_e4m3fn",
+      "repo_filename": "gemma_3_12B_it_fp8_e4m3fn.safetensors",
+      "revision": "c26496d8fab07c9743fd09e24562e246ae009ed6",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/GitMylo/LTX-2-comfy_gemma_fp8_e4m3fn/blob/c26496d8fab07c9743fd09e24562e246ae009ed6/gemma_3_12B_it_fp8_e4m3fn.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "ltx-2.3_text_projection_bf16.safetensors",
+      "category": "text_encoders",
+      "selection": "ltx-2.3_text_projection_bf16.safetensors",
+      "destination": "text_encoders/ltx-2.3_text_projection_bf16.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 516,
+          "node_type": "DualCLIPLoader",
+          "field": "widgets_values/1",
+          "classification": "B",
+          "mode": 4,
+          "enabled": true,
+          "original_selection": "ltx-2.3_text_projection_bf16.safetensors",
+          "selection": "ltx-2.3_text_projection_bf16.safetensors"
+        }
+      ],
+      "expected_size": 2312149072,
+      "sha256": "911d59bb4cb7708179c9a0045ea0fe41212ecfb77aed3a02702b7c0a8274911f",
+      "source_verified": true,
+      "reason": "DualCLIPLoader node 516 [B]",
+      "source": "huggingface",
+      "repo_id": "Kijai/LTX2.3_comfy",
+      "repo_filename": "text_encoders/ltx-2.3_text_projection_bf16.safetensors",
+      "revision": "6d980fde0d330f2fed6ff8dfdfddb06d88a004e5",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/Kijai/LTX2.3_comfy/blob/6d980fde0d330f2fed6ff8dfdfddb06d88a004e5/text_encoders/ltx-2.3_text_projection_bf16.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "LTX23_audio_vae_bf16.safetensors",
+      "category": "vae",
+      "selection": "LTX23_audio_vae_bf16.safetensors",
+      "destination": "vae/LTX23_audio_vae_bf16.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 515,
+          "node_type": "VAELoader",
+          "field": "widgets_values/0",
+          "classification": "B",
+          "mode": 4,
+          "enabled": true,
+          "original_selection": "LTX23_audio_vae_bf16.safetensors",
+          "selection": "LTX23_audio_vae_bf16.safetensors"
+        }
+      ],
+      "expected_size": 364855188,
+      "sha256": "5bc10fa4adecf99dda132d916e23048cbd56797702c5fa50eb5d2079048a38c3",
+      "source_verified": true,
+      "reason": "VAELoader node 515 [B]",
+      "source": "huggingface",
+      "repo_id": "Kijai/LTX2.3_comfy",
+      "repo_filename": "vae/LTX23_audio_vae_bf16.safetensors",
+      "revision": "6d980fde0d330f2fed6ff8dfdfddb06d88a004e5",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/Kijai/LTX2.3_comfy/blob/6d980fde0d330f2fed6ff8dfdfddb06d88a004e5/vae/LTX23_audio_vae_bf16.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    },
+    {
+      "filename": "LTX23_video_vae_bf16.safetensors",
+      "category": "vae",
+      "selection": "LTX23_video_vae_bf16.safetensors",
+      "destination": "vae/LTX23_video_vae_bf16.safetensors",
+      "required": true,
+      "occurrences": [
+        {
+          "graph": "root",
+          "node_id": 514,
+          "node_type": "VAELoader",
+          "field": "widgets_values/0",
+          "classification": "B",
+          "mode": 4,
+          "enabled": true,
+          "original_selection": "LTX23_video_vae_bf16.safetensors",
+          "selection": "LTX23_video_vae_bf16.safetensors"
+        }
+      ],
+      "expected_size": 1452258578,
+      "sha256": "01ea62d09bc139f95c5dee7b5c062ad6a3e6cd8be910a1983ac02e7eb5b8ee3b",
+      "source_verified": true,
+      "reason": "VAELoader node 514 [B]",
+      "source": "huggingface",
+      "repo_id": "Kijai/LTX2.3_comfy",
+      "repo_filename": "vae/LTX23_video_vae_bf16.safetensors",
+      "revision": "6d980fde0d330f2fed6ff8dfdfddb06d88a004e5",
+      "provenance": "author_or_maintainer",
+      "evidence_url": "https://huggingface.co/Kijai/LTX2.3_comfy/blob/6d980fde0d330f2fed6ff8dfdfddb06d88a004e5/vae/LTX23_video_vae_bf16.safetensors",
+      "auth": "Public metadata accessible without token; download access not tested"
+    }
+  ],
+  "metadata_references": [
+    {
+      "classification": "D",
+      "graph": "root",
+      "node_id": 587,
+      "path": "properties/models/0/name",
+      "value": "ltx-2-spatial-upscaler-x2-1.0.safetensors",
+      "reason": "Informational property, not a selected widget"
+    },
+    {
+      "classification": "D",
+      "graph": "root",
+      "node_id": 587,
+      "path": "properties/models/0/url",
+      "value": "https://huggingface.co/Lightricks/LTX-2/resolve/main/ltx-2-spatial-upscaler-x2-1.0.safetensors",
+      "reason": "Informational property, not a selected widget"
+    },
+    {
+      "classification": "E",
+      "path": "extra/prompt/1/inputs/ckpt_name",
+      "value": "ltx-av-step-1751000_vocoder_24K.safetensors",
+      "reason": "Execution/frontend metadata; not used to add models"
+    },
+    {
+      "classification": "E",
+      "path": "extra/prompt/2/inputs/gemma_path",
+      "value": "gemma-3-12b-it-qat-q4_0-unquantized_readout_proj/model/model.safetensors",
+      "reason": "Execution/frontend metadata; not used to add models"
+    },
+    {
+      "classification": "E",
+      "path": "extra/prompt/2/inputs/ltxv_path",
+      "value": "ltx-av-step-1751000_vocoder_24K.safetensors",
+      "reason": "Execution/frontend metadata; not used to add models"
+    },
+    {
+      "classification": "E",
+      "path": "extra/prompt/13/inputs/ckpt_name",
+      "value": "ltx-av-step-1751000_vocoder_24K.safetensors",
+      "reason": "Execution/frontend metadata; not used to add models"
+    }
+  ],
+  "size_report": {
+    "known_bytes": 100723767566,
+    "unknown_files": [
+      "animeflatLTX.2.3.safetensors"
+    ]
+  }
+}
