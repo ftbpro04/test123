@@ -15,6 +15,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 WORKSPACE = Path(os.getenv("WORKSPACE", "/workspace"))
+PERSIST_ROOT = Path(os.getenv("LTX23_PERSIST_ROOT", "/workspace/ltx23-data"))
 LOG_DIR = WORKSPACE / "logs"
 STATUS_FILE = LOG_DIR / "ltx23-model-status.json"
 COMFY_PORT = int(os.getenv("COMFY_PORT", "8188"))
@@ -66,7 +67,7 @@ HTML = r'''<!doctype html>
 
     <section class="card stat"><div class="tiny">GPU</div><div id="gpuName" class="metric" style="font-size:18px">—</div><div id="gpuUtil" class="muted">—</div></section>
     <section class="card stat"><div class="tiny">VRAM</div><div id="vram" class="metric">—</div><div id="gpuTemp" class="muted">—</div></section>
-    <section class="card stat"><div class="tiny">Workspace disk</div><div id="disk" class="metric">—</div><div id="diskSub" class="muted">—</div></section>
+    <section class="card stat"><div class="tiny">LTX persistent data</div><div id="disk" class="metric">—</div><div id="diskSub" class="muted">—</div></section>
     <section class="card stat"><div class="tiny">Workflow pack</div><div id="profile" class="metric" style="font-size:18px">—</div><div id="instance" class="muted">—</div></section>
 
     <section class="card models">
@@ -139,7 +140,7 @@ async function status(){
     const rt=s.runtime||{};
     $('instance').textContent=(rt.torch||rt.cuda)?`Torch ${rt.torch||'—'} · CUDA ${rt.cuda||'—'}`:(s.instance||'Vast instance');
     if(s.gpu){$('gpuName').textContent=s.gpu.name||'GPU';$('gpuUtil').textContent=`${s.gpu.utilization_pct ?? '—'}% utilization`; $('vram').textContent=s.gpu.memory_total_mb?`${(s.gpu.memory_used_mb/1024).toFixed(1)} / ${(s.gpu.memory_total_mb/1024).toFixed(1)} GB`:'—'; $('gpuTemp').textContent=s.gpu.temperature_c!=null?`${s.gpu.temperature_c} °C · ${s.gpu.power_w ?? '—'} W`:'—';}
-    if(s.disk){$('disk').textContent=fmtGB(s.disk.used_mb);$('diskSub').textContent=`${fmtGB(s.disk.free_mb)} free of ${fmtGB(s.disk.total_mb)}`;}
+    if(s.disk){$('disk').textContent=fmtGB(s.disk.data_used_mb ?? 0);$('diskSub').textContent=`${fmtGB(s.disk.free_mb)} free of ${fmtGB(s.disk.total_mb)} volume`;}
     setSvc('comfy',s.services.comfy,s.services.comfy?'ready':'starting / unavailable');
     setSvc('jupyter',s.services.jupyter,s.services.jupyter?'ready':'starting / unavailable');
     $('downloadDot').className='svc-dot '+(s.services.downloader?'ok':(s.models.complete?'ok':'bad'));
@@ -210,11 +211,38 @@ def runtime_info() -> dict:
         return {"torch": "unknown", "cuda": "unknown", "error": str(exc)}
 
 
+def _dir_size_bytes(root: Path) -> int:
+    total = 0
+    try:
+        for base, dirs, files in os.walk(root):
+            for name in files:
+                path = Path(base) / name
+                try:
+                    total += path.stat().st_size
+                except (OSError, FileNotFoundError):
+                    pass
+    except Exception:
+        pass
+    return total
+
+
+_disk_cache = {"at": 0.0, "data_used_bytes": 0}
+
+
 def disk_info() -> dict:
     try:
         d = shutil.disk_usage(WORKSPACE)
+        now_ts = time.time()
+        if now_ts - _disk_cache["at"] > 10:
+            _disk_cache["data_used_bytes"] = _dir_size_bytes(PERSIST_ROOT)
+            _disk_cache["at"] = now_ts
         mb = 1024 * 1024
-        return {"total_mb": d.total / mb, "used_mb": d.used / mb, "free_mb": d.free / mb}
+        return {
+            "total_mb": d.total / mb,
+            "used_mb": d.used / mb,
+            "free_mb": d.free / mb,
+            "data_used_mb": _disk_cache["data_used_bytes"] / mb,
+        }
     except Exception:
         return {}
 
