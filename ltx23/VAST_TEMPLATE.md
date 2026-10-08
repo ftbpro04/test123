@@ -1,56 +1,28 @@
-# Vast.ai Template — LTX 2.3 Exact Workflow / CUDA 13
+# Vast.ai Template — LTX 2.3 CLEAN CUDA 13
 
 ## Image
 
 ```
-ghcr.io/ftbpro04/vast-ltx23:cuda13-v1
+ghcr.io/ftbpro04/vast-ltx23:clean-cuda13-v2
 ```
 
-## Identification
+## Host requirement
 
-Template Name:
-
-```
-LTX 2.3 - Exact Workflow CUDA 13
-```
-
-Template Description:
-
-```
-LTX 2.3 10Eros triple-pass I2V using the Antilopax v14 ComfyUI/LTX tree on PyTorch 2.10 + CUDA 13.0, with exact workflow nodes/models, dashboard and Jupyter
-```
-
-## GPU / host requirement
-
-Choose a Vast offer whose **CUDA Max Supported is 13.0 or newer**.
-
-The container itself is built on:
-
-```
-PyTorch 2.10
-CUDA 13.0
-cuDNN 9
-```
-
-The Docker build contains a hard check and will fail instead of publishing if Torch is not using CUDA 13.x.
+Choose a Vast offer with CUDA Max Supported 13.0 or newer.
 
 ## Ports
 
 TCP only:
 
-- `18080` — Dashboard
-- `8188` — ComfyUI
-- `8888` — JupyterLab
+- 18080 — Dashboard
+- 8188 — ComfyUI
+- 8888 — JupyterLab
 
-Do not expose port 8080 for this template.
-
-## Environment Variables
-
-Recommended:
+## Environment
 
 ```
 WORKSPACE=/workspace
-LTX23_PERSIST_ROOT=/workspace/ComfyUI
+LTX23_PERSIST_ROOT=/workspace/ltx23-data
 ENABLE_DASHBOARD=1
 ENABLE_JUPYTER=1
 DASHBOARD_PORT=18080
@@ -62,52 +34,47 @@ DOWNLOAD_WORKFLOW_MODELS=1
 Optional:
 
 ```
-HF_TOKEN=<your Hugging Face token if needed>
-DASHBOARD_PASSWORD=<optional password>
-COMFY_EXTRA_ARGS=<optional additional ComfyUI arguments>
-DOWNLOAD_WORKFLOW_MODELS=0
+HF_TOKEN=<token if required>
+DASHBOARD_PASSWORD=<optional>
+COMFY_EXTRA_ARGS=<optional>
 ```
 
-Use `DOWNLOAD_WORKFLOW_MODELS=0` only when the persistent volume already contains all five required files.
+## Launch mode
 
-## Launch Mode
-
-Select:
-
-```
 Docker ENTRYPOINT
-```
 
-Leave Docker ENTRYPOINT args blank.
-
+Leave ENTRYPOINT args blank.
 Leave On-start Script blank.
 
-This image no longer invokes Antilopax's NVIDIA entrypoint or relies on its inherited CMD. ComfyUI is launched directly by our stable entrypoint, eliminating the empty-command restart loop seen in the previous image.
+## Storage
 
-## Disk / Volume
+Container disk: 40–50 GB.
 
-Recommended:
+Persistent volume: 100 GB minimum, 150 GB recommended.
+Mount the volume at /workspace.
 
-- Container disk: 50 GB
-- Persistent volume: 150 GB minimum; 200 GB recommended
-- Mount volume at: `/workspace`
+Only these directories are persistent under /workspace/ltx23-data:
 
-## Exact automatic downloads
+- models
+- input
+- output
+- user
 
-Approximately 62 GB total:
+Hugging Face, Torch and Triton caches are NOT stored persistently.
 
-- `10Eros_v1_bf16.safetensors`
-- `gemma_3_12B_it_fp8_e4m3fn.safetensors`
-- `ltx-2.3-spatial-upscaler-x2-1.1.safetensors`
-- `ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors`
-- `ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors`
+The automatic downloader keeps temporary partial downloads under
+/workspace/ltx23-data/.downloads and removes each temporary directory after
+the corresponding model is moved into its final models path.
 
-Existing files are skipped when the same persistent `/workspace` volume is attached.
+## Exact models
 
-## Failure behavior
+Only the five active workflow files are downloaded:
 
-If ComfyUI itself exits, the container intentionally remains alive. It does **not** restart ComfyUI in a loop. The dashboard and logs stay available on port 18080 so the error can be diagnosed.
+- 10Eros_v1_bf16.safetensors
+- gemma_3_12B_it_fp8_e4m3fn.safetensors
+- ltx-2.3-spatial-upscaler-x2-1.1.safetensors
+- ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors
+- ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors
 
-## Visibility
-
-Keep the Vast template Private while testing.
+Do not reuse the old /workspace/ComfyUI persistent folder from previous
+LTX template generations.
