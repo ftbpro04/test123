@@ -25,7 +25,7 @@ RUN python -m venv --system-site-packages /opt/venv \
     && python - <<'PY'
 from importlib.metadata import version,PackageNotFoundError
 from pathlib import Path
-rows=['transformers==4.57.6','huggingface-hub==0.36.0','click>=8,<8.4,!=8.3.0']
+rows=['kornia==0.8.2','transformers==4.57.6','huggingface-hub==0.36.0','click>=8,<8.4,!=8.3.0']
 for name in ('torch','torchvision','torchaudio','triton'):
     try: rows.append(f'{name}=={version(name)}')
     except PackageNotFoundError: pass

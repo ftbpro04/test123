@@ -40,6 +40,12 @@ for i in $(seq 1 180); do
     echo 'CPU node registration validation passed'
     exit 0
   fi
+  # Once object_info responds, ComfyUI has finished importing nodes: fail immediately.
+  if docker exec "$CID" python -c "import json; r=json.load(open('/tmp/ltx23-runtime/validation.json')); assert r.get('missing_backend_nodes') is not None" 2>/dev/null; then
+    cat "$REPORT_DIR/node-validation.log"
+    docker exec "$CID" tail -n 160 /workspace/logs/comfy.log || true
+    exit 1
+  fi
   if docker exec "$CID" python -c "import json; s=json.load(open('/tmp/ltx23-runtime/services.json')); assert s['comfy']['state']=='Error'" 2>/dev/null; then
     cat "$REPORT_DIR/node-validation.log"
     exit 1

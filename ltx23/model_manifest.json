@@ -138,17 +138,19 @@
       ],
       "expected_size": 805412928,
       "sha256": "a741c30110cfda9f13f0cbcaf97649f18a53adc05e31ec745f215994956f4e0f",
-      "source_verified": false,
+      "source_verified": true,
       "reason": "Power Lora Loader (rgthree) node 557 [C]",
       "source": "huggingface",
       "repo_id": "Fredjs/cfy",
       "repo_filename": "DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors",
       "revision": "5ca93963a2480da6ff57dd9cc4328cf7b338c441",
-      "provenance": "mirror_only; author hash not verified",
+      "provenance": "Civitai exact filename and author SHA256 verified; mirror hash matches",
       "evidence_url": "https://huggingface.co/Fredjs/cfy/blob/5ca93963a2480da6ff57dd9cc4328cf7b338c441/DaSiWa_LTX23_NSFW_Bodyphysics_Fluid_Motion_Enhancer_v01.safetensors",
       "author_page": "https://civitai.com/models/2668916?modelVersionId=2996907",
       "civitai_version_id": 2996907,
-      "auth": "Public metadata accessible without token; download access not tested"
+      "auth": "Public metadata accessible without token; download access not tested",
+      "author_metadata_url": "https://civitai.com/api/v1/model-versions/2996907",
+      "author_metadata_checked_at": "2026-10-08"
     },
     {
       "filename": "Kissing_Lora_2000.safetensors",
@@ -171,17 +173,19 @@
       ],
       "expected_size": 1348024144,
       "sha256": "4b33a0dbc1b98a5df7c76b96f37b87e528243667df91b4c4c36f01e5f9dbf7a5",
-      "source_verified": false,
+      "source_verified": true,
       "reason": "Power Lora Loader (rgthree) node 557 [C]",
       "source": "huggingface",
       "repo_id": "Fredjs/cfy",
       "repo_filename": "Kissing_Lora_2000.safetensors",
       "revision": "5ca93963a2480da6ff57dd9cc4328cf7b338c441",
-      "provenance": "mirror_only; author hash not verified",
+      "provenance": "Civitai exact filename and author SHA256 verified; mirror hash matches",
       "evidence_url": "https://huggingface.co/Fredjs/cfy/blob/5ca93963a2480da6ff57dd9cc4328cf7b338c441/Kissing_Lora_2000.safetensors",
       "author_page": "https://civitai.com/models/2609418?modelVersionId=2929984",
       "civitai_version_id": 2929984,
-      "auth": "Public metadata accessible without token; download access not tested"
+      "auth": "Public metadata accessible without token; download access not tested",
+      "author_metadata_url": "https://civitai.com/api/v1/model-versions/2929984",
+      "author_metadata_checked_at": "2026-10-08"
     },
     {
       "filename": "LTX 2.3 - Twerking.safetensors",
@@ -237,17 +241,19 @@
       ],
       "expected_size": 805412760,
       "sha256": "1f7c87052d44087e17630b7075d8dfd8205c17ce5e7d3bcbeae11af2102c88db",
-      "source_verified": false,
+      "source_verified": true,
       "reason": "Power Lora Loader (rgthree) node 557 [A]",
       "source": "huggingface",
       "repo_id": "Fredjs/cfy",
       "repo_filename": "LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors",
       "revision": "5ca93963a2480da6ff57dd9cc4328cf7b338c441",
-      "provenance": "mirror_only; author hash not verified",
+      "provenance": "Civitai exact filename and author SHA256 verified; mirror hash matches",
       "evidence_url": "https://huggingface.co/Fredjs/cfy/blob/5ca93963a2480da6ff57dd9cc4328cf7b338c441/LTX2.3_reasoning_Sulphur-2_I2V_V4.safetensors",
       "author_page": "https://civitai.com/models/2497207?modelVersionId=3025398",
       "civitai_version_id": 3025398,
-      "auth": "Public metadata accessible without token; download access not tested"
+      "auth": "Public metadata accessible without token; download access not tested",
+      "author_metadata_url": "https://civitai.com/api/v1/model-versions/3025398",
+      "author_metadata_checked_at": "2026-10-08"
     },
     {
       "filename": "animeflatLTX.2.3.safetensors",
@@ -268,15 +274,18 @@
           "selection": "animeflatLTX.2.3.safetensors"
         }
       ],
-      "expected_size": null,
-      "sha256": null,
-      "source_verified": false,
+      "expected_size": 674249568,
+      "sha256": "f2520fcaccea108773d4e7003fe0465babc26bec566db3c75a0922625b87a932",
+      "source_verified": true,
       "reason": "Power Lora Loader (rgthree) node 557 [C]",
       "author_page": "https://civitai.com/models/1952560?modelVersionId=2809357",
       "civitai_version_id": 2809357,
       "source": "civitai",
-      "provenance": "candidate version identified; API returned HTTP 403; runtime exact filename and SHA256 verification required",
-      "auth": "CIVITAI_TOKEN may be required; access not verified"
+      "provenance": "Civitai exact filename, SHA256 and byte size verified",
+      "auth": "Metadata and download headers accessible without a token on 2026-10-08; full download not tested",
+      "url": "https://civitai.com/api/download/models/2809357?fileId=2695218",
+      "author_metadata_url": "https://civitai.com/api/v1/model-versions/2809357",
+      "author_metadata_checked_at": "2026-10-08"
     },
     {
       "filename": "LTX2-i2v-SexyMove_test000006000.safetensors",
@@ -330,17 +339,19 @@
       ],
       "expected_size": 485451280,
       "sha256": "150ec404e517562a8e0692f4a9401c740cc0199793dc608d168490ba2d958203",
-      "source_verified": false,
+      "source_verified": true,
       "reason": "Power Lora Loader (rgthree) node 557 [C]",
       "source": "huggingface",
       "repo_id": "Fredjs/cfy",
       "repo_filename": "LTX2.3_reasoning_I2V_V3.safetensors",
       "revision": "5ca93963a2480da6ff57dd9cc4328cf7b338c441",
-      "provenance": "mirror_only; author hash not verified",
+      "provenance": "Civitai exact filename and author SHA256 verified; mirror hash matches",
       "evidence_url": "https://huggingface.co/Fredjs/cfy/blob/5ca93963a2480da6ff57dd9cc4328cf7b338c441/LTX2.3_reasoning_I2V_V3.safetensors",
       "author_page": "https://civitai.com/models/2497207?modelVersionId=2848299",
       "civitai_version_id": 2848299,
-      "auth": "Public metadata accessible without token; download access not tested"
+      "auth": "Public metadata accessible without token; download access not tested",
+      "author_metadata_url": "https://civitai.com/api/v1/model-versions/2848299",
+      "author_metadata_checked_at": "2026-10-08"
     },
     {
       "filename": "ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
@@ -594,9 +605,7 @@
     }
   ],
   "size_report": {
-    "known_bytes": 100723767566,
-    "unknown_files": [
-      "animeflatLTX.2.3.safetensors"
-    ]
+    "known_bytes": 101398017134,
+    "unknown_files": []
   }
 }

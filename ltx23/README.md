@@ -31,9 +31,9 @@ Every existing file is locally SHA256 checked on restart. Verified files require
 
 ### Source limitations
 
-Ten files have author/maintainer repository metadata. Five additional files have matching names, exact sizes and SHA256 from HF mirrors, with candidate Civitai author/version links recorded. **Their mirror hashes have not been compared to authoritative Civitai hashes.** They are clearly marked `source_verified: false`. No similarly named replacement was substituted.
+All 16 entries now have exact sizes and SHA256: **101,398,017,134 bytes (101.398 GB / 94.434 GiB)**. Ten use author/maintainer repository metadata. Four HF mirror hashes were matched against exact Civitai author filenames and hashes. The anime file was verified at Civitai version **2809357**, including its exact 674,249,568-byte response length.
 
-`animeflatLTX.2.3.safetensors` remains mandatory but its exact size and SHA256 are unresolved. Candidate Civitai version **2809357** could not be read (HTTP 403). At runtime the downloader can resolve that version using `CIVITAI_TOKEN`, requires exactly the selected filename, obtains the API SHA256 and exact response byte length, then downloads/verifies it. If it still cannot access the source, the result stays **15/16 or less**, with an explicit error. Access requirements have not been confirmed; a token may not resolve every access restriction.
+**Twerking remains the one unresolved author-source check.** Its pinned HF mirror has exact filename, size and SHA256, but candidate Civitai version 3034886 and hash lookup return 404. It stays mandatory and `source_verified: false`; no replacement was substituted. Source metadata verification does not mean the 101 GB of weights have been downloaded or GPU-tested.
 
 With authorized Civitai access available, run `CIVITAI_TOKEN=... python verify_author_sources.py --write` from this folder to resolve author metadata without downloading weights. Supply the token through your environment or secret manager; do not commit it. The verifier refuses filename or mirror-hash mismatches. Regenerate the human-readable model report after successful verification.
 

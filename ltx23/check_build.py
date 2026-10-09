@@ -20,6 +20,8 @@ def main():
     if a.require_sources:assert not unresolved,'Release blocked by unresolved author-source verification'
     if a.runtime:
         import torch
+        # LTXVideo at the pinned commit imports this symbol (removed in Kornia 0.8.3).
+        from kornia.geometry.transform.pyramid import pad
         assert torch.__version__.startswith('2.10.'),torch.__version__
         assert torch.version.cuda is not None and torch.version.cuda.startswith('13.'),torch.version.cuda
         assert torch.backends.cudnn.version() and torch.backends.cudnn.version()//10000==9

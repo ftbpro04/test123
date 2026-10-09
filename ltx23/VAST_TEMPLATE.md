@@ -14,7 +14,7 @@ No new image is published by this change. **Do not enter a proposed tag in Vast 
 | Persistent volume mount | `/workspace` (configure actual volume attachment) |
 | Host filter | CUDA Max Supported >= 13.0 |
 | Container disk | Must be finalized from measured image size; provisional budget 40 GB |
-| Persistent disk | Must be finalized after the remaining model size is resolved; provisional budget 200 GB |
+| Persistent disk | 200 GB starting budget for 101.398 GB models, 50 GiB outputs and 10 GiB reserve; allow more for large outputs |
 
 ```text
 WORKSPACE=/workspace
@@ -27,15 +27,15 @@ JUPYTER_PORT=8888
 DOWNLOAD_WORKFLOW_MODELS=1
 ```
 
-Optional: `HF_TOKEN`, `CIVITAI_TOKEN`, `JUPYTER_TOKEN`, `DASHBOARD_PASSWORD`, `COMFY_EXTRA_ARGS`. The anime LoRA metadata may need `CIVITAI_TOKEN`; exact access requirements remain unverified. No performance flags are added by default. `--cpu` is for CI registration tests only.
+Optional: `HF_TOKEN`, `CIVITAI_TOKEN`, `JUPYTER_TOKEN`, `DASHBOARD_PASSWORD`, `COMFY_EXTRA_ARGS`. Anime metadata and download headers were accessible without a token during verification; access can change. No performance flags are added by default. `--cpu` is for CI registration tests only.
 
 Vast mappings normally expose `VAST_TCP_PORT_18080`, `VAST_TCP_PORT_8188`, `VAST_TCP_PORT_8888`, and `PUBLIC_IPADDR`. The dashboard does not assume internal ports equal public ports. For a custom proxy, explicit `COMFY_PUBLIC_URL` and `JUPYTER_PUBLIC_URL` are supported.
 
 ## Storage sizing
 
-15 known files: **100,723,767,566 bytes = 100.724 GB = 93.806 GiB**. Full total = this subtotal plus the exact size of `animeflatLTX.2.3.safetensors`, currently unknown. This is not an exact 16-file total. See MODEL_REPORT.md.
+All 16 files: **101,398,017,134 bytes = 101.398 GB = 94.434 GiB**. See MODEL_REPORT.md.
 
-Once the unknown size is resolved, budget the complete model total + desired input/output capacity + at least 10 GiB free reserve. A practical starting output allowance is 50 GiB. Round up to the volume sizes offered. 200 GB is provisional, not a measured requirement or guarantee. The volume cannot be resized after creation according to Vast's documentation.
+Budget the complete model total + desired input/output capacity + at least 10 GiB free reserve. A practical starting output allowance is 50 GiB. Round up to the volume sizes offered. Models plus those allowances total 165.823 GB; 200 GB is a practical starting budget, not a guarantee for arbitrary outputs. The volume cannot be resized after creation according to Vast's documentation.
 
 Atomic rename means no second checkpoint-sized copy is needed for normal first downloads. A partial occupies the space that its final file will occupy; the free-space guard needs remaining bytes + reserve. Failed, legacy, and manually downloaded duplicate files consume extra space and appear in the audit. No automatic cleanup of legacy content is performed.
 
