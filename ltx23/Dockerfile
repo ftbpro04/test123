@@ -1,69 +1,54 @@
 FROM pytorch/pytorch:2.10.0-cuda13.0-cudnn9-devel
-
 ARG DEBIAN_FRONTEND=noninteractive
 ARG COMFY_REF=52f98af2e2e42c421070a3e147c161c47cdeaf22
-
 ENV PYTHONUNBUFFERED=1 \
     NVIDIA_VISIBLE_DEVICES=all \
-    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
     WORKSPACE=/workspace \
     LTX23_PERSIST_ROOT=/workspace/ltx23-data \
-    ENABLE_DASHBOARD=1 \
-    ENABLE_JUPYTER=1 \
-    DASHBOARD_PORT=18080 \
-    COMFY_PORT=8188 \
-    JUPYTER_PORT=8888 \
+    ENABLE_DASHBOARD=1 ENABLE_JUPYTER=1 \
+    DASHBOARD_PORT=18080 COMFY_PORT=8188 JUPYTER_PORT=8888 \
     DOWNLOAD_WORKFLOW_MODELS=1 \
-    HF_HOME=/tmp/huggingface \
-    HUGGINGFACE_HUB_CACHE=/tmp/huggingface/hub \
-    TORCH_HOME=/tmp/torch-cache \
-    TRITON_CACHE_DIR=/tmp/triton-cache \
-    LTX23_BASE_IMAGE="Clean ComfyUI + PyTorch 2.10 CUDA 13.0" \
-    VIRTUAL_ENV=/opt/venv \
-    PATH=/opt/venv/bin:$PATH
-
+    HF_HOME=/tmp/huggingface HF_HUB_CACHE=/tmp/huggingface/hub \
+    HF_XET_CACHE=/tmp/huggingface/xet TORCH_HOME=/tmp/torch-cache \
+    TRITON_CACHE_DIR=/tmp/triton-cache XDG_CACHE_HOME=/tmp/xdg-cache \
+    PIP_NO_CACHE_DIR=1 GIT_LFS_SKIP_SMUDGE=1 \
+    VIRTUAL_ENV=/opt/venv PATH=/opt/venv/bin:$PATH \
+    PIP_CONSTRAINT=/opt/ltx23/torch-constraints.txt
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      git git-lfs curl wget aria2 rsync unzip jq ffmpeg \
-      build-essential ninja-build cmake ca-certificates tini python3-venv \
-    && git lfs install \
+    git git-lfs curl ffmpeg ca-certificates tini python3-venv \
+    build-essential ninja-build cmake libgl1 libglib2.0-0 libegl1 libgles2 \
+    libvulkan1 mesa-vulkan-drivers libx11-6 libxcb1 \
     && rm -rf /var/lib/apt/lists/*
-
+COPY . /opt/ltx23/
 RUN python -m venv --system-site-packages /opt/venv \
-    && /opt/venv/bin/python -m pip install --no-cache-dir --upgrade pip setuptools wheel
-
-WORKDIR /opt
-RUN git clone https://github.com/Comfy-Org/ComfyUI.git \
-    && cd ComfyUI \
-    && git checkout "$COMFY_REF" \
-    && python -m pip install --no-cache-dir -r requirements.txt \
-    && python -m pip install --no-cache-dir \
-         jupyterlab psutil "huggingface_hub>=0.34" hf-xet requests
-
-COPY install_workflow_nodes.sh /tmp/install_workflow_nodes.sh
-RUN chmod +x /tmp/install_workflow_nodes.sh \
-    && /tmp/install_workflow_nodes.sh /opt/ComfyUI \
-    && rm /tmp/install_workflow_nodes.sh
-
-COPY dashboard.py /usr/local/bin/ltx23-dashboard.py
-COPY download_workflow_models.py /usr/local/bin/download_ltx23_workflow_models.py
-COPY entrypoint.sh /usr/local/bin/ltx23-entrypoint.sh
-
-RUN chmod +x \
-      /usr/local/bin/ltx23-dashboard.py \
-      /usr/local/bin/download_ltx23_workflow_models.py \
-      /usr/local/bin/ltx23-entrypoint.sh \
-    && bash -n /usr/local/bin/ltx23-entrypoint.sh \
-    && python -m py_compile \
-      /usr/local/bin/ltx23-dashboard.py \
-      /usr/local/bin/download_ltx23_workflow_models.py \
     && python - <<'PY'
-import torch
-print("Torch:", torch.__version__)
-print("Torch CUDA:", torch.version.cuda)
-assert str(torch.version.cuda).startswith("13."), torch.version.cuda
+from importlib.metadata import version,PackageNotFoundError
+from pathlib import Path
+rows=['kornia==0.8.2','transformers==4.57.6','huggingface-hub==0.36.0','click>=8,<8.4,!=8.3.0']
+for name in ('torch','torchvision','torchaudio','triton'):
+    try: rows.append(f'{name}=={version(name)}')
+    except PackageNotFoundError: pass
+Path('/opt/ltx23/torch-constraints.txt').write_text('\n'.join(rows)+'\n')
 PY
-
+RUN python -m pip install --upgrade pip setuptools wheel \
+    && mkdir /opt/ComfyUI \
+    && git -C /opt/ComfyUI init -q \
+    && git -C /opt/ComfyUI fetch --depth 1 https://github.com/Comfy-Org/ComfyUI.git "$COMFY_REF" \
+    && git -C /opt/ComfyUI checkout --detach FETCH_HEAD \
+    && python -m pip install -r /opt/ComfyUI/requirements.txt \
+    && python -m pip install jupyterlab psutil requests huggingface_hub \
+    && bash /opt/ltx23/install_workflow_nodes.sh /opt/ComfyUI \
+    && python -m pip check \
+    && python /opt/ltx23/check_build.py --runtime \
+    && bash -n /opt/ltx23/entrypoint.sh \
+    && python -m compileall -q /opt/ltx23 \
+    && test -f /opt/ComfyUI/main.py \
+    && chmod +x /opt/ltx23/entrypoint.sh \
+    && rm -rf /opt/ComfyUI/models /opt/ComfyUI/input /opt/ComfyUI/output /opt/ComfyUI/user \
+    && rm -rf /root/.cache/pip /tmp/huggingface /tmp/torch-cache
 WORKDIR /opt/ComfyUI
 EXPOSE 18080 8188 8888
-
-ENTRYPOINT ["/usr/bin/tini","--","/usr/local/bin/ltx23-entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.getenv('DASHBOARD_PORT','18080')+'/api/health',timeout=3)"
+ENTRYPOINT ["/usr/bin/tini","--","/opt/ltx23/entrypoint.sh"]
+CMD []
