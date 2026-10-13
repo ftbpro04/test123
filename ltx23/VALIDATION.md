@@ -16,11 +16,11 @@
 | Milestone | Status |
 |---|---|
 | Docker build / final CUDA assertion | Passed in run 37741032409: Torch 2.10.0+cu130, CUDA 13.0, cuDNN 91501; pip check passed |
-| Full backend custom-node registration | 43/47 backend types passed. RoPE incompatibility fixed in run 37794934659; it exposed Kornia 0.8.3 removing an imported pad symbol. Kornia 0.8.2 pinned and symbol added to build assertions; rerun pending |
+| Full backend custom-node registration | Passed: all 47 backend types plus frontend Set/Get checks, in runs 37957155195 and 38469933610 |
 | CUDA device availability | Requires actual compatible GPU |
 | All 16 model files downloaded and hash checked | Not performed; all 16 sizes/hashes now known |
 | Civitai source verification for six LoRAs | Five passed; Twerking version and hash lookup return 404 |
-| GHCR publication | Deliberately disabled by request |
+| GHCR publication | Authorized test tag cuda13-v3-test-6d3e3f5 published; anonymous access verified in run 38469933610 |
 | Vast runtime / mapped port test | Not performed; no Vast runtime was provisioned |
 | Workflow opened and all three passes generated with audio | Not performed |
 | Reattachment of real Vast storage | Not performed; fixture reuse verified locally |
@@ -34,4 +34,6 @@ The old persistence helper copied/deleted application data during startup, and h
 
 ## Before release
 
-Resolve the remaining Twerking author-source entry. Update the manifest with exact evidence and rerun `check_build.py --require-sources`. Finish Docker and CPU registration CI. Inspect `build_report.json`, pin additional Python packages if the resolved dependency set needs stabilization, and measure image size. Run the real-GPU acceptance steps in VAST_TEMPLATE.md. Only then publish a versioned image with separate authorization. Existing MiniMax files and tags are unchanged.
+Resolve the remaining Twerking author-source entry. Update the manifest with exact evidence and rerun `check_build.py --require-sources`. Docker and CPU registration CI passed. Inspect `build_report.json`, pin additional Python packages if the resolved dependency set needs stabilization, and measure image size. Run the real-GPU acceptance steps in VAST_TEMPLATE.md. A versioned test candidate was published with user authorization on 2026-10-13; do not promote it to a production tag until the remaining gates pass. Existing MiniMax files and tags are unchanged.
+
+Publication evidence: https://github.com/ftbpro04/test123/actions/runs/38469933610
