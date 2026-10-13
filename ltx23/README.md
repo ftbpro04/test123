@@ -3,7 +3,7 @@
 **Published GPU-test candidate:** `ghcr.io/ftbpro04/vast-ltx23:cuda13-v3-test-6d3e3f5`. Build, CPU node registration and public registry access passed. Follow [VAST_TEMPLATE.md](VAST_TEMPLATE.md) to create the template. GPU generation remains untested.
 
 Implementation for `10E_I2V_triplepass_00010-audio.mp4.json`.
-**Review build, not a production-certified or published image.** See `VALIDATION.md` for measured status and remaining blockers.
+**Published test build; live GPU acceptance is still pending.** See `VALIDATION.md` for measured status and remaining blockers.
 
 ## Workflow completeness
 
@@ -59,6 +59,6 @@ docker build -t ltx23:cuda13-review ltx23
 bash ltx23/smoke_test.sh ltx23:cuda13-review
 ```
 
-GitHub Actions builds and tests with **push:false** and no package-write permission. It never publishes, per the request. Its smoke test checks a no-GPU failure launch and a separate CPU registration launch. CPU validation includes `GLSLShader` inside the bypassed subgraph and explicitly treats KJ Set/Get as frontend nodes. It is not equivalent to loading/generating this graph on a GPU.
+The validation workflow builds and tests with **push:false**. A separate, user-authorized publication workflow builds pinned source, runs the container smoke test, and publishes only the versioned test tag. Its smoke test checks a no-GPU failure launch and a separate CPU registration launch. CPU validation includes `GLSLShader` inside the bypassed subgraph and explicitly treats KJ Set/Get as frontend nodes. It is not equivalent to loading/generating this graph on a GPU.
 
 See `VAST_TEMPLATE.md`, `MODEL_REPORT.md`, and `VALIDATION.md`.
