@@ -16,7 +16,7 @@ from common import APP, WORKSPACE, PERSIST, RUNTIME, LOGS, MANIFEST, atomic_json
 
 PORT=int(os.environ.get('DASHBOARD_PORT','18080'))
 PASSWORD=os.environ.get('DASHBOARD_PASSWORD','')
-LOG_NAMES=('models','comfy','jupyter','dashboard','container','validation')
+LOG_NAMES=('models','comfy','jupyter','dashboard','container','validation','heretic')
 metrics={'storage':{'status':'Scanning'},'gpus':[]}
 
 def scan_directory(path,seen):

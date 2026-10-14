@@ -14,7 +14,8 @@ ENV PYTHONUNBUFFERED=1 \
     TRITON_CACHE_DIR=/tmp/triton-cache XDG_CACHE_HOME=/tmp/xdg-cache \
     PIP_NO_CACHE_DIR=1 GIT_LFS_SKIP_SMUDGE=1 \
     VIRTUAL_ENV=/opt/venv PATH=/opt/venv/bin:$PATH \
-    PIP_CONSTRAINT=/opt/ltx23/torch-constraints.txt
+    PIP_CONSTRAINT=/opt/ltx23/torch-constraints.txt \
+    UV_CONSTRAINT=/opt/ltx23/torch-constraints.txt
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git git-lfs curl ffmpeg ca-certificates tini python3-venv \
     build-essential ninja-build cmake libgl1 libglib2.0-0 libegl1 libgles2 \
@@ -47,6 +48,14 @@ RUN python -m pip install --upgrade pip setuptools wheel \
     && chmod +x /opt/ltx23/entrypoint.sh \
     && rm -rf /opt/ComfyUI/models /opt/ComfyUI/input /opt/ComfyUI/output /opt/ComfyUI/user \
     && rm -rf /root/.cache/pip /tmp/huggingface /tmp/torch-cache
+# Isolated prompt dependencies: never upgrade ComfyUI's Transformers or Torch.
+RUN /opt/venv/bin/python -m venv --system-site-packages /opt/prompt-venv \
+    && grep -E '^(torch|torchvision|torchaudio|triton)==' /opt/ltx23/torch-constraints.txt > /opt/ltx23/prompt-constraints.txt \
+    && PIP_CONSTRAINT=/opt/ltx23/prompt-constraints.txt /opt/prompt-venv/bin/python -m pip install \
+       "transformers==5.5.0" "huggingface-hub>=1.3,<2" "accelerate>=1.10,<2" "bitsandbytes>=0.49,<1" Pillow \
+    && /opt/prompt-venv/bin/python -c "import torch, torchvision; from transformers import AutoProcessor, AutoModelForImageTextToText; assert torch.__version__.startswith('2.10.'); print(torch.__version__)" \
+    && cp -r /opt/ltx23/custom_nodes/ltx23_heretic_prompt /opt/ComfyUI/custom_nodes/ \
+    && python /opt/ltx23/check_build.py --runtime
 WORKDIR /opt/ComfyUI
 EXPOSE 18080 8188 8888
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.getenv('DASHBOARD_PORT','18080')+'/api/health',timeout=3)"

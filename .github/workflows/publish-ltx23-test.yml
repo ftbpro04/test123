@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
-      IMAGE: ghcr.io/ftbpro04/vast-ltx23:cuda13-v3-test-6d3e3f5
+      IMAGE: ghcr.io/ftbpro04/vast-ltx23:cuda13-v4-heretic-20261014
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 6d3e3f53bade6c2f066fe49f3fc6ef2798c9f989
+          ref: ${{ github.sha }}
       - name: Free runner disk
         run: sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
       - uses: docker/setup-buildx-action@v3
@@ -32,7 +32,7 @@ jobs:
           tags: ${{ env.IMAGE }}
           labels: |
             org.opencontainers.image.source=https://github.com/ftbpro04/test123
-            org.opencontainers.image.revision=6d3e3f53bade6c2f066fe49f3fc6ef2798c9f989
+            org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Verify container before publication
@@ -53,7 +53,7 @@ jobs:
           repo='ftbpro04/vast-ltx23'
           with urllib.request.urlopen('https://ghcr.io/token?service=ghcr.io&scope=repository:'+repo+':pull',timeout=30) as r:
               token=json.load(r)['token']
-          req=urllib.request.Request('https://ghcr.io/v2/'+repo+'/manifests/cuda13-v3-test-6d3e3f5',headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json'})
+          req=urllib.request.Request('https://ghcr.io/v2/'+repo+'/manifests/cuda13-v4-heretic-20261014',headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json'})
           with urllib.request.urlopen(req,timeout=30) as r:
               print('Anonymous pull manifest verified:',r.headers.get('Docker-Content-Digest'))
           PY

@@ -55,7 +55,7 @@ def validate(workflow, manifest, object_info=None, custom_root=None):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--url',default='http://127.0.0.1:8188');p.add_argument('--watch',action='store_true');p.add_argument('--static',action='store_true');p.add_argument('--nodes-only',action='store_true');p.add_argument('--custom-root',default='/opt/ComfyUI/custom_nodes');a=p.parse_args()
-    w=read_json(APP/'workflows/ltx23-linux.json');m=read_json(MANIFEST)
+    w=read_json(APP/'workflows/ltx23-heretic.json');m=read_json(MANIFEST)
     last=None
     while True:
         info=None;error=None

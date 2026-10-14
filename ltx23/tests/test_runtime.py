@@ -146,3 +146,28 @@ class AuthorSourceTests(unittest.TestCase):
         from verify_author_sources import verify
         with self.assertRaisesRegex(dm.DownloadError,'differs'):
             verify({'filename':'a.safetensors','sha256':'a'*64},{'files':[{'name':'a.safetensors','hashes':{'SHA256':'b'*64}}]})
+
+class HereticTemplateTests(unittest.TestCase):
+    def test_auto_workflow_preserves_model_inventory(self):
+        w=json.loads((APP/'workflows/ltx23-heretic.json').read_text())
+        inventory,_=audit(w)
+        manifest=json.loads((APP/'model_manifest.json').read_text())
+        self.assertEqual({m['destination'] for m in inventory['models']},{m['destination'] for m in manifest['models']})
+        nodes={n['id']:n for n in w['nodes']}
+        self.assertEqual(nodes[667]['type'],'LTX23HereticPrompt')
+        for link in w['links']:
+            if link[1]==667 or link[3]==667:
+                i,s,so,t,ti,ty=link
+                self.assertIn(i,nodes[s]['outputs'][so]['links'])
+                self.assertEqual(nodes[t]['inputs'][ti]['link'],i)
+    def test_persistent_prompt_is_not_overwritten(self):
+        import supervisor
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);comfy=root/'comfy';comfy.mkdir();persist=root/'persistent'
+            with patch.object(supervisor,'PERSIST',persist),patch.dict(os.environ,{'COMFY_ROOT':str(comfy)}):
+                lock=supervisor.persist();lock.close()
+                master=persist/'config/heretic_system.txt'
+                self.assertTrue((persist/'user/default/workflows/ltx23-heretic.json').is_file())
+                master.write_text('My custom instructions')
+                lock=supervisor.persist();lock.close()
+                self.assertEqual(master.read_text(),'My custom instructions')

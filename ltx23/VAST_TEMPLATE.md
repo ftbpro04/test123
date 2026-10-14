@@ -62,3 +62,18 @@ If a model fails, inspect the Models log instead of recreating the instance. Twe
 Send the instance card/port-mapping screenshot and dashboard status, with passwords/tokens hidden. If anything fails, include the corresponding ComfyUI or Models log. Do not destroy the persistent volume while troubleshooting.
 
 Sources: https://docs.vast.ai/guides/templates/template-settings and https://docs.vast.ai/guides/instances/storage/volumes
+
+## Heretic auto-prompt candidate
+
+Image: `ghcr.io/ftbpro04/vast-ltx23:cuda13-v4-heretic-20261014` (use only after its publish job passes).
+Use the same ports, volume mount, Docker ENTRYPOINT launch mode, blank arguments and blank on-start script as above.
+
+The image includes `ltx23_heretic_prompt` and a separate `/opt/prompt-venv` for Qwen3.5. Main ComfyUI stays on its existing Transformers and CUDA 13 / Torch 2.10 environment. Both pip and uv use the main environment constraints for later installs.
+
+First boot downloads `tvall43/Qwen3.5-4B-heretic-v2` into `/workspace/ltx23-data/models/LLM/Qwen-VL/Qwen3.5-4B-heretic-v2`, plus both missing processor configs from the pinned original Qwen model. Watch the `heretic` service/log in the dashboard. Existing complete downloads are reused. This adds approximately 9 GB to the persistent model volume; it does not bake weights into the image.
+
+Open `ltx23-heretic.json` in ComfyUI's saved workflows. Enter a short idea and load your image. Auto mode generates an image-aware prompt; Manual mode skips Qwen. GPU resources are released when the separate worker exits. The workflow retains all 16 configured LTX model selections, including disabled branches.
+
+Master instructions live in `/workspace/ltx23-data/config/heretic_system.txt`, editable in Jupyter. They are seeded once, preserved on restart, and read on each expansion. Defaults cover general motion and non-explicit romantic/fashion scenes. Change the node seed to force a new run after edits. The adapter does not require the QwenVL custom-node pack inside ComfyUI.
+
+`DOWNLOAD_WORKFLOW_MODELS=0` skips automatic LTX and Heretic downloads (intended for smoke tests or pre-provisioned volumes). The dashboard and Jupyter remain available if downloading or generation fails.

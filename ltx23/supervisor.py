@@ -70,6 +70,12 @@ def persist():
     workflow.parent.mkdir(parents=True,exist_ok=True)
     if not workflow.exists():
         with workflow.open('x') as out:out.write((APP/'workflows/ltx23-linux.json').read_text())
+    prompt_workflow = workflow.with_name('ltx23-heretic.json')
+    if not prompt_workflow.exists():
+        prompt_workflow.write_text((APP/'workflows/ltx23-heretic.json').read_text())
+    master = PERSIST/'config/heretic_system.txt'
+    master.parent.mkdir(parents=True, exist_ok=True)
+    if not master.exists(): master.write_text((APP/'heretic_system.txt').read_text())
     return lock
 
 def probe():
@@ -117,6 +123,9 @@ def main():
         command=[sys.executable,str(APP/'download_workflow_models.py')]
         if not enabled('DOWNLOAD_WORKFLOW_MODELS'):command+=['--check-only']
         start('models',command)
+        if enabled('DOWNLOAD_WORKFLOW_MODELS'):
+            start('heretic',['/opt/prompt-venv/bin/python', str(APP/'provision_heretic.py')])
+        else: states['heretic']={'state':'Disabled'}
         if enabled('ENABLE_JUPYTER'):
             cfg=setup_token()
             start('jupyter',[sys.executable,'-m','jupyterlab','--ip=0.0.0.0',
