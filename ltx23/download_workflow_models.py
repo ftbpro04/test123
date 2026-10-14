@@ -1,198 +1,177 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-
+"""One locked sequential downloader, one partial per target, no HF blob cache."""
+import argparse
+import fcntl
+import hashlib
 import json
 import os
+import re
 import shutil
 import time
-from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote, urlparse
+import requests
+from common import MANIFEST, PERSIST, RUNTIME, atomic_json, digest, model_path, read_json
 
-from huggingface_hub import get_hf_file_metadata, hf_hub_download, hf_hub_url
-from tqdm.auto import tqdm as base_tqdm
+CHUNK = 4 * 1024 * 1024
 
-WORKSPACE = Path(os.getenv("WORKSPACE", "/workspace"))
-PERSIST_ROOT = Path(os.getenv("LTX23_PERSIST_ROOT", "/workspace/ltx23-data"))
-MODELS_ROOT = Path(os.getenv("LTX23_MODELS_ROOT", str(PERSIST_ROOT / "models")))
-DOWNLOAD_ROOT = PERSIST_ROOT / ".downloads"
-LOG_DIR = WORKSPACE / "logs"
-STATUS_FILE = LOG_DIR / "ltx23-model-status.json"
-HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN")
+class DownloadError(RuntimeError): pass
 
-MODELS = [
-    {
-        "name": "10Eros LTX 2.3 BF16 checkpoint",
-        "repo": "TenStrip/LTX2.3-10Eros",
-        "filename": "10Eros_v1_bf16.safetensors",
-        "target": "checkpoints/10Eros_v1_bf16.safetensors",
-    },
-    {
-        "name": "Gemma 3 12B FP8 text encoder",
-        "repo": "GitMylo/LTX-2-comfy_gemma_fp8_e4m3fn",
-        "filename": "gemma_3_12B_it_fp8_e4m3fn.safetensors",
-        "target": "text_encoders/gemma_3_12B_it_fp8_e4m3fn.safetensors",
-    },
-    {
-        "name": "LTX 2.3 spatial upscaler x2 v1.1",
-        "repo": "Lightricks/LTX-2.3",
-        "filename": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
-        "target": "latent_upscale_models/ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
-    },
-    {
-        "name": "LTX 2.3 cond-safe distilled LoRA",
-        "repo": "SulphurAI/Sulphur-2-base",
-        "filename": "distill_loras/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
-        "target": "loras/ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
-    },
-    {
-        "name": "LTX 2.3 Edit Anything IC-LoRA",
-        "repo": "Alissonerdx/LTX-LoRAs",
-        "filename": "ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
-        "target": "loras/ltx23/ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
-    },
-]
-
-def now() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-def write_status(rows: list[dict]) -> None:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    ready = sum(1 for x in rows if x["status"] in {"present", "downloaded", "ready"})
-    payload = {"updated_at": now(), "ready": ready, "total": len(rows), "models": rows}
-    tmp = STATUS_FILE.with_name(f"{STATUS_FILE.name}.{os.getpid()}.tmp")
-    tmp.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    os.replace(tmp, STATUS_FILE)
-
-def remote_size(m: dict) -> int | None:
+def request(url, headers=None, stream=False):
+    if urlparse(url).scheme != 'https' and os.environ.get('LTX23_TEST_HTTP') != '1':
+        raise DownloadError('Download sources must use HTTPS')
     try:
-        meta = get_hf_file_metadata(hf_hub_url(m["repo"], m["filename"]), token=HF_TOKEN)
-        return int(meta.size) if meta.size is not None else None
-    except Exception as exc:
-        print(f"[models] SIZE? {m['name']}: {exc}", flush=True)
-        return None
+        r = requests.get(url, headers=headers or {}, timeout=(20, 90), stream=stream)
+    except requests.RequestException:
+        raise DownloadError('Network request failed or timed out; retry is safe') from None
+    if r.status_code not in (200, 206):
+        code=r.status_code; r.close()
+        raise DownloadError(f'HTTP {code}; check access and HF_TOKEN/CIVITAI_TOKEN if required')
+    return r
 
-def progress_class(index: int, rows: list[dict]):
-    class DashboardTqdm(base_tqdm):
-        def __init__(self, *args, **kwargs):
-            self._last_dashboard_write = 0.0
-            super().__init__(*args, **kwargs)
-            self._sync(force=True)
+def source_info(model, cache):
+    m=dict(model)
+    if m.get('expected_size') and m.get('sha256'): return m
+    cached=cache.get(m['destination'])
+    if cached and cached.get('civitai_version_id')==m.get('civitai_version_id'):
+        m.update(cached); return m
+    if m['source'] != 'civitai': raise DownloadError('Authoritative size and SHA256 are unresolved')
+    headers={}
+    if os.environ.get('CIVITAI_TOKEN'): headers['Authorization']='Bearer '+os.environ['CIVITAI_TOKEN']
+    with request(f'https://civitai.com/api/v1/model-versions/{m["civitai_version_id"]}', headers) as r:
+        data=r.json()
+    matches=[f for f in data.get('files',[]) if f.get('name')==m['filename']]
+    if len(matches)!=1: raise DownloadError('Civitai version does not contain one exact matching filename')
+    file=matches[0]; sha=file.get('hashes',{}).get('SHA256','').lower()
+    if not re.fullmatch('[a-f0-9]{64}',sha): raise DownloadError('Civitai file has no usable SHA256')
+    url=file['downloadUrl']
+    # Resolve an exact integer Content-Length; rounded sizeKB is not sufficient.
+    with request(url, headers, stream=True) as r:
+        expected=int(r.headers.get('Content-Length',0))
+    if expected<=0: raise DownloadError('Civitai response omitted exact file size')
+    m.update(expected_size=expected,sha256=sha,url=url,source_verified=True)
+    cache[m['destination']]={k:m[k] for k in ('civitai_version_id','expected_size','sha256','url','source_verified')}
+    return m
 
-        def _sync(self, force: bool = False):
-            t = time.monotonic()
-            if not force and t - self._last_dashboard_write < 0.5:
-                return
-            self._last_dashboard_write = t
-            rows[index]["downloaded_bytes"] = int(getattr(self, "n", 0) or 0)
-            total = getattr(self, "total", None)
-            if total:
-                rows[index]["size_bytes"] = int(total)
-            rows[index]["updated_at"] = now()
-            write_status(rows)
+def download_url(m):
+    headers={'Accept-Encoding':'identity'}
+    if m['source']=='huggingface':
+        url=f'https://huggingface.co/{m["repo_id"]}/resolve/{m["revision"]}/{quote(m["repo_filename"],safe="/")}'
+        token=os.environ.get('HF_TOKEN') or os.environ.get('HUGGING_FACE_HUB_TOKEN')
+    else:
+        url=m['url'];token=os.environ.get('CIVITAI_TOKEN')
+    if token:headers['Authorization']='Bearer '+token
+    return url,headers
 
-        def update(self, n=1):
-            result = super().update(n)
-            self._sync()
-            return result
+def disk_guard(directory, remaining, margin):
+    free=shutil.disk_usage(directory).free
+    if free < remaining+margin:
+        raise DownloadError(f'Insufficient disk space: remaining {remaining/1e9:.2f} GB; '
+                            f'available {free/1e9:.2f} GB; recommended free {(remaining+margin)/1e9:.2f} GB')
 
-        def close(self):
-            try:
-                self._sync(force=True)
-            except Exception:
-                pass
-            return super().close()
-    return DashboardTqdm
-
-def target_is_complete(target: Path, expected_size: int | None) -> bool:
-    if not target.exists() or not target.is_file():
-        return False
-    size = target.stat().st_size
-    if expected_size:
-        return size == expected_size
-    return size > 1024 * 1024
-
-def main() -> int:
-    MODELS_ROOT.mkdir(parents=True, exist_ok=True)
-    DOWNLOAD_ROOT.mkdir(parents=True, exist_ok=True)
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-
-    rows: list[dict] = []
-    for m in MODELS:
-        rows.append({
-            "name": m["name"], "repo": m["repo"], "filename": m["filename"],
-            "target": str(MODELS_ROOT / m["target"]), "status": "queued",
-            "size_bytes": None, "downloaded_bytes": 0, "updated_at": now(),
-        })
-    write_status(rows)
-
-    failures = 0
-    for i, m in enumerate(MODELS):
-        target = MODELS_ROOT / m["target"]
-        target.parent.mkdir(parents=True, exist_ok=True)
-        expected = remote_size(m)
-        rows[i]["size_bytes"] = expected
-        write_status(rows)
-
-        if target_is_complete(target, expected):
-            actual = target.stat().st_size
-            rows[i].update(status="present", downloaded_bytes=actual,
-                           size_bytes=expected or actual, updated_at=now())
-            write_status(rows)
-            print(f"[models] SKIP {m['name']} -> {target}", flush=True)
-            continue
-
-        if target.exists():
-            print(f"[models] Removing incomplete target: {target}", flush=True)
-            target.unlink(missing_ok=True)
-
-        slot = DOWNLOAD_ROOT / f"model-{i}"
-        slot.mkdir(parents=True, exist_ok=True)
-
-        rows[i]["status"] = "downloading"
-        rows[i]["updated_at"] = now()
-        write_status(rows)
-        print(f"[models] GET  {m['name']} ({m['repo']} :: {m['filename']})", flush=True)
-
+def transfer(m, target, partials, update, received, margin):
+    expected,sha=m['expected_size'],m['sha256']
+    key=hashlib.sha256(m['destination'].encode()).hexdigest()[:24]
+    part=partials/(key+'.part');meta=partials/(key+'.json')
+    identity={'destination':m['destination'],'expected_size':expected,'sha256':sha}
+    if part.exists() and read_json(meta)!=identity:
+        raise DownloadError(f'Partial identity differs; inspect {part} before removing it')
+    atomic_json(meta,identity)
+    if target.exists():
+        if not part.exists() and target.stat().st_size < expected:
+            os.replace(target,part)
+        else:
+            # A target is removed only after its expected size/hash has proved invalid.
+            target.unlink()
+    target.parent.mkdir(parents=True,exist_ok=True)
+    if partials.stat().st_dev != target.parent.stat().st_dev:
+        raise DownloadError('Downloads and models must share one filesystem for atomic placement')
+    url,headers=download_url(m)
+    for attempt in range(3):
+        offset=part.stat().st_size if part.exists() else 0
+        if offset>expected:part.unlink();offset=0
+        disk_guard(partials,expected-offset,margin)
         try:
-            cached = Path(hf_hub_download(
-                repo_id=m["repo"],
-                filename=m["filename"],
-                token=HF_TOKEN,
-                local_dir=str(slot),
-                tqdm_class=progress_class(i, rows),
-            ))
-            if not cached.exists():
-                raise RuntimeError(f"Downloaded file not found: {cached}")
+            if offset<expected:
+                request_headers=dict(headers)
+                if offset:request_headers['Range']=f'bytes={offset}-'
+                update('Downloading',offset)
+                with request(url,request_headers,stream=True) as response:
+                    if response.headers.get('Content-Encoding','identity') not in ('','identity'):
+                        raise DownloadError('Unexpected compressed transfer')
+                    if response.status_code==206:
+                        match=re.fullmatch(r'bytes (\d+)-(\d+)/(\d+)',response.headers.get('Content-Range',''))
+                        if not match or int(match[1])!=offset or int(match[2])!=expected-1 or int(match[3])!=expected:
+                            raise DownloadError('Invalid resume range; refusing to append')
+                    elif offset:
+                        # Server ignored Range. Reclaim our own partial before restarting.
+                        part.unlink();offset=0
+                        disk_guard(partials,expected,margin)
+                    content_length=response.headers.get('Content-Length')
+                    if content_length and int(content_length)!=expected-offset:
+                        raise DownloadError('Remote size differs from manifest')
+                    with part.open('ab' if offset else 'wb') as f:
+                        last=0
+                        for block in response.iter_content(CHUNK):
+                            if not block:continue
+                            if offset+len(block)>expected:raise DownloadError('Response exceeds expected size')
+                            disk_guard(partials,len(block),margin)
+                            f.write(block);offset+=len(block);received(len(block))
+                            if time.monotonic()-last>0.5:
+                                update('Downloading',offset);last=time.monotonic()
+                        f.flush();os.fsync(f.fileno())
+            if part.stat().st_size!=expected:raise DownloadError('Transfer ended before expected size')
+            update('Verifying',expected)
+            if digest(part)!=sha:
+                part.unlink()
+                raise DownloadError('SHA256 mismatch; corrupt partial removed for retry')
+            os.replace(part,target);meta.unlink(missing_ok=True)
+            update('Ready',expected);return
+        except (requests.RequestException, DownloadError, OSError) as exc:
+            if attempt==2 and isinstance(exc,DownloadError):raise
+            if attempt==2:raise DownloadError('Download failed after 3 attempts; partial retained if resumable') from None
+            time.sleep(2**attempt)
 
-            os.replace(cached, target)
-            actual = target.stat().st_size
-            shutil.rmtree(slot, ignore_errors=True)
+def run(check_only=False):
+    PERSIST.mkdir(parents=True,exist_ok=True)
+    with (PERSIST/'.model-downloader.lock').open('a') as lock:
+        try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:
+            print('Another model downloader is already active. Exiting.',flush=True);return 0
+        models=read_json(MANIFEST)['models'];root=PERSIST/'models';partials=PERSIST/'downloads'
+        root.mkdir(exist_ok=True);partials.mkdir(exist_ok=True)
+        cachefile=partials/'model_metadata.json';cache=read_json(cachefile)
+        rows=[{**m,'status':'Queued','downloaded_bytes':0,'final_path':str(model_path(root,m['destination']))} for m in models]
+        payload={'models':rows,'downloaded_this_launch':0,'reused_bytes':0,'checked_at':None}
+        def save():
+            payload.update(updated_at=time.time(),ready=sum(r['status']=='Ready' for r in rows),total=len(rows))
+            atomic_json(RUNTIME/'models.json',payload)
+        def received(n):payload['downloaded_this_launch']+=n
+        save();failures=0
+        for row in rows:
+            def update(status,amount=0):row.update(status=status,downloaded_bytes=amount);save()
+            try:
+                update('Checking')
+                if check_only and not row.get('expected_size') and row['destination'] not in cache:
+                    raise DownloadError('Size/hash unresolved; automatic downloading disabled')
+                m=source_info(row,cache);row.update({k:m[k] for k in ('expected_size','sha256','source_verified')})
+                atomic_json(cachefile,cache)
+                target=model_path(root,m['destination'])
+                if target.is_file() and target.stat().st_size==m['expected_size']:
+                    update('Verifying',m['expected_size'])
+                    if digest(target)==m['sha256']:
+                        payload['reused_bytes']+=m['expected_size'];update('Ready',m['expected_size'])
+                        print(f'SKIP verified {m["destination"]}',flush=True);continue
+                if check_only:raise DownloadError('Missing or corrupt model; downloads disabled')
+                print(f'GET {m["destination"]}',flush=True)
+                transfer(m,target,partials,update,received,int(os.environ.get('MIN_FREE_BYTES',10*1024**3)))
+            except Exception as exc:
+                failures+=1;row['error']=str(exc) if isinstance(exc,DownloadError) else f'{type(exc).__name__}: metadata or filesystem operation failed'
+                update('Error');print(f'ERROR {row["filename"]}: {row["error"]}',flush=True)
+        payload['checked_at']=time.time();save()
+        print(f'{payload["ready"]}/{len(rows)} verified models; received {payload["downloaded_this_launch"]} bytes; reused {payload["reused_bytes"]} bytes',flush=True)
+        return 2 if failures else 0
 
-            rows[i].update(status="downloaded", downloaded_bytes=actual,
-                           size_bytes=expected or actual, updated_at=now())
-            write_status(rows)
-            print(f"[models] DONE {m['name']} -> {target}", flush=True)
-        except Exception as exc:
-            failures += 1
-            rows[i]["status"] = "error"
-            rows[i]["error"] = str(exc)
-            rows[i]["updated_at"] = now()
-            write_status(rows)
-            print(f"[models] ERROR {m['name']}: {exc}", flush=True)
-
-    # Remove empty download root when everything is complete.
-    try:
-        if DOWNLOAD_ROOT.exists() and not any(DOWNLOAD_ROOT.iterdir()):
-            DOWNLOAD_ROOT.rmdir()
-    except Exception:
-        pass
-
-    if failures:
-        print(f"[models] Finished with {failures} failure(s). Re-running resumes.", flush=True)
-        return 2
-
-    print("[models] All exact workflow models are ready.", flush=True)
-    return 0
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__=='__main__':
+    p=argparse.ArgumentParser();p.add_argument('--check-only',action='store_true');a=p.parse_args()
+    raise SystemExit(run(a.check_only))
