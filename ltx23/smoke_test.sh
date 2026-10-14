@@ -4,6 +4,8 @@ IMAGE="${1:?image tag required}"
 REPORT_DIR="${REPORT_DIR:-$PWD/ltx23-test-results}"
 mkdir -p "$REPORT_DIR"
 CID=""
+# Validate the actual Heretic tokenizer + processor with an image, without weights/GPU.
+docker run --rm --entrypoint /opt/prompt-venv/bin/python "$IMAGE" /opt/ltx23/check_prompt_processor.py
 cleanup() {
   if [[ -n "$CID" ]]; then
     docker logs "$CID" > "$REPORT_DIR/docker.log" 2>&1 || true
