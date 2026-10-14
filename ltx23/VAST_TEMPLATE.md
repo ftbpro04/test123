@@ -65,7 +65,7 @@ Sources: https://docs.vast.ai/guides/templates/template-settings and https://doc
 
 ## Heretic auto-prompt candidate
 
-Image: `ghcr.io/ftbpro04/vast-ltx23:cuda13-v4-heretic-20261014-r2` (use only after its publish job passes).
+Image: `ghcr.io/ftbpro04/vast-ltx23:cuda13-v4-heretic-20261014-r3` (use only after its publish job passes).
 Use the same ports, volume mount, Docker ENTRYPOINT launch mode, blank arguments and blank on-start script as above.
 
 The image includes `ltx23_heretic_prompt` and a separate `/opt/prompt-venv` for Qwen3.5. Main ComfyUI stays on its existing Transformers and CUDA 13 / Torch 2.10 environment. Both pip and uv use the main environment constraints for later installs.

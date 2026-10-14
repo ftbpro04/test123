@@ -7,6 +7,8 @@ from pathlib import Path
 from common import APP, MANIFEST, PERSIST, RUNTIME, atomic_json, model_path, read_json
 from workflow_model_parser import audit, graphs
 
+# Built-in canvas annotations have no backend execution or registration.
+CORE_FRONTEND = {'Note'}
 FRONTEND = {'SetNode': 'ComfyUI-KJNodes/web/js', 'GetNode': 'ComfyUI-KJNodes/web/js'}
 
 def validate(workflow, manifest, object_info=None, custom_root=None):
@@ -16,13 +18,13 @@ def validate(workflow, manifest, object_info=None, custom_root=None):
     manifest_ok=expected==supplied and len(supplied)==16 and len(manifest['models'])==16
     subgraphs={g for g,_ in graphs(workflow) if g!='root'}
     types={n['type'] for n in parsed['nodes']}-subgraphs
-    frontend_ok=[];frontend_missing=[]
+    frontend_ok=sorted(types & CORE_FRONTEND);frontend_missing=[]
     for t in sorted(types & FRONTEND.keys()):
         folder=Path(custom_root or '/opt/ComfyUI/custom_nodes')/FRONTEND[t]
         # Set/Get are virtual JS nodes, deliberately absent from /object_info.
         found=folder.is_dir() and any(t in f.read_text(errors='replace') for f in folder.rglob('*.js'))
         (frontend_ok if found else frontend_missing).append(t)
-    backend=types-FRONTEND.keys()
+    backend=types-FRONTEND.keys()-CORE_FRONTEND
     missing=sorted(backend-set(object_info)) if object_info is not None else None
     metadata=read_json(PERSIST/'downloads/model_metadata.json')
     absent=[];present=[];selection_errors=[]
