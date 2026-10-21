@@ -70,3 +70,11 @@ Use `VAST_TEMPLATE.md` for the Vast settings.
 - Resumable Hugging Face downloads.
 - `MINIMAX_PROFILE` support (`full`, `core`, `fl2va`, `ref2va`, `none`).
 - ComfyUI Manager, rgthree Power LoRA Loader, KJNodes, VideoHelperSuite, MiniMax helpers, QwenVL tools, RIFE TensorRT and TensorRT upscaling.
+
+## Automatic ComfyUI updates
+
+New pods fetch the latest official ComfyUI default-branch commit at startup and install its requirements before launching. Restarts check again. This includes frontend updates specified by ComfyUI. Models, workflows and custom nodes remain persistent and are not updated by this step. Existing CUDA PyTorch package versions are constrained so pip cannot silently replace them.
+
+Progress appears in Vast instance logs and `/workspace/logs/container.log`. If GitHub is unavailable, startup uses the installed core. A dependency conflict stops startup with an error instead of launching an inconsistent installation. Latest upstream code may require newer dependencies or break custom-node compatibility. Set `UPDATE_COMFYUI=0` to skip updates.
+
+Use the newly built `ghcr.io/ftbpro04/vast-minimax-h3:latest` image for this behavior; existing containers do not receive changed startup scripts automatically.

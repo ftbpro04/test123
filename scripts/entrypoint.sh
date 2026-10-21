@@ -34,13 +34,43 @@ echo " Model profile: ${MINIMAX_PROFILE:-full}"
 echo "=============================================================="
 echo
 
+# Refresh core before attaching persistent folders. Never reset user data or nodes.
+# Fetch failures retain the installed version; dependency failures stop startup
+# rather than launching a mismatched core/environment.
+if [[ "${UPDATE_COMFYUI:-1}" =~ ^(1|true|yes|on)$ ]]; then
+  echo "[update] Fetching latest official ComfyUI..."
+  if timeout 180 git -C "$COMFYUI_ROOT" fetch --depth=1 https://github.com/Comfy-Org/ComfyUI.git HEAD; then
+    git -C "$COMFYUI_ROOT" checkout --detach FETCH_HEAD
+    constraints="$(mktemp)"
+    python - <<'PYCONSTRAINTS' > "$constraints"
+from importlib.metadata import version, PackageNotFoundError
+for name in ('torch', 'torchvision', 'torchaudio'):
+    try:
+        print(f'{name}=={version(name)}')
+    except PackageNotFoundError:
+        pass
+PYCONSTRAINTS
+    if ! python -m pip install --constraint "$constraints" -r "$COMFYUI_ROOT/requirements.txt"; then
+      rm -f "$constraints"
+      echo "[update] Requirements failed; ComfyUI was not launched. See container.log."
+      exit 1
+    fi
+    rm -f "$constraints"
+    echo "[update] ComfyUI ready: $(git -C "$COMFYUI_ROOT" rev-parse --short HEAD)"
+  else
+    echo "[update] Fetch unavailable; continuing with installed ComfyUI."
+  fi
+else
+  echo "[update] UPDATE_COMFYUI disabled; using installed version."
+fi
+
 # Seed curated nodes, but never overwrite anything the user/Manager already changed.
 rsync -a --ignore-existing /opt/seed/custom_nodes/ "$DATA_ROOT/custom_nodes/" || true
 
 # Seed starter workflows without overwriting user's versions.
 rsync -a --ignore-existing /opt/seed/workflows/ "$DATA_ROOT/user/default/workflows/" || true
 
-# Make ComfyUI's mutable areas persistent. Core code remains immutable in /opt.
+# Make ComfyUI's mutable areas persistent. Core code is updated separately in /opt.
 for d in models custom_nodes input output user; do
   if [[ -e "$COMFYUI_ROOT/$d" && ! -L "$COMFYUI_ROOT/$d" ]]; then
     rm -rf "$COMFYUI_ROOT/$d"
