@@ -30,12 +30,9 @@ MODELS = [
     {"name":"Ref2VA Pruned INT8 ConvRot (official)","repo":"Comfy-Org/MiniMax-H3","remote_path":"diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors","local_dir":".","profiles":["full","core","ref2va"]},
     {"name":"MiniMax H3 video VAE FP16","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_video_vae_fp16.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]},
     {"name":"MiniMax H3 audio VAE FP32","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_audio_vae_fp32.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]},
-    {"name":"FL2VA NVFP4 + ConvRot INT8","repo":"lilcheaty/MiniMax-H3-NVFP4","remote_path":"minimax_h3_fl2va_pruned_nvfp4_convrot_int8.safetensors","local_dir":"diffusion_models","profiles":["full","core","fl2va"]},
-    {"name":"Ref2VA NVFP4 + ConvRot INT8","repo":"lilcheaty/MiniMax-H3-NVFP4","remote_path":"minimax_h3_ref2va_pruned_nvfp4_convrot_int8.safetensors","local_dir":"diffusion_models","profiles":["full","core","ref2va"]},
     {"name":"Qwen3-VL 32B Heretic MiniMax H3 NVFP4","repo":"Momoking/Qwen3-VL-32B-Heretic-MiniMax-H3-NVFP4","remote_path":"qwen3vl_32b_heretic_minimax_h3_nvfp4.safetensors","local_dir":"text_encoders","profiles":["full","core","fl2va","ref2va"]},
     {"name":"FL2V Turbo 8-step 768p LoRA","repo":"lightx2v/Minimax-h3-Turbo","remote_path":"minimax_h3_fl2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors","local_dir":"loras","profiles":["full","core","fl2va"]},
     {"name":"Ref2V Turbo 8-step 768p LoRA","repo":"lightx2v/Minimax-h3-Turbo","remote_path":"minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors","local_dir":"loras","profiles":["full","core","ref2va"]},
-    {"name":"10Eros-Max H3 TURBO Hybrid Beta3 INT8 ConvRot Skip-Edges","repo":"cicalooo/10Eros-Max-h3-int8-convrot","remote_path":"10Eros_Max_h3_TURBO-hybrid_beta3_int8_convrot_skip_edges.safetensors","local_dir":"diffusion_models","profiles":["full"]},
 ]
 
 if os.getenv("DOWNLOAD_INT8_VIDEO_VAE", "0").lower() in {"1", "true", "yes", "on"}:
