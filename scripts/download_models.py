@@ -27,6 +27,7 @@ if PROFILE not in VALID_PROFILES:
     PROFILE = "full"
 
 MODELS = [
+    {"name":"Ref2VA Pruned INT8 ConvRot (official)","repo":"Comfy-Org/MiniMax-H3","remote_path":"diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors","local_dir":".","profiles":["full","core","ref2va"]},
     {"name":"MiniMax H3 video VAE FP16","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_video_vae_fp16.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]},
     {"name":"MiniMax H3 audio VAE FP32","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_audio_vae_fp32.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]},
     {"name":"FL2VA NVFP4 + ConvRot INT8","repo":"lilcheaty/MiniMax-H3-NVFP4","remote_path":"minimax_h3_fl2va_pruned_nvfp4_convrot_int8.safetensors","local_dir":"diffusion_models","profiles":["full","core","fl2va"]},
