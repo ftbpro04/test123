@@ -59,6 +59,7 @@ RUN mkdir -p /opt/seed/workflows \
 COPY workflows/MiniMax-H3-Ref2VA-CharacterSwap-V15-PowerLoRA.json /opt/seed/workflows/MiniMax-H3-Ref2VA-CharacterSwap-V15-PowerLoRA.json
 
 COPY scripts/download_models.py /usr/local/bin/download_minimax_models.py
+COPY scripts/h3_batch.py scripts/h3_batch.html /usr/local/bin/
 COPY scripts/dashboard.py /usr/local/bin/minimax-dashboard.py
 COPY scripts/entrypoint.sh /usr/local/bin/minimax-entrypoint.sh
 RUN chmod +x \

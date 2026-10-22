@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import h3_batch
 import base64
 import hmac
 import json
@@ -50,7 +51,7 @@ HTML = r'''<!doctype html>
 
   <div class="grid">
     <section class="card launch">
-      <div class="title">Launch apps</div>
+      <div class="title">Launch apps</div><a class="btn" href="/batch">Process full video · automatic chunks</a>
       <div class="muted">The buttons automatically use the public ports assigned by Vast for this instance.</div>
       <div class="btns">
         <a id="comfyBtn" class="btn disabled" href="#" target="_blank" rel="noopener">Open ComfyUI</a>
@@ -285,10 +286,26 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def do_POST(self):
+        if not self.authorized():
+            self.require_auth()
+            return
+        if not h3_batch.route(self, "POST"):
+            self.send_json({"error": "not found"}, 404)
+
+    def do_PUT(self):
+        if not self.authorized():
+            self.require_auth()
+            return
+        if not h3_batch.route(self, "PUT"):
+            self.send_json({"error": "not found"}, 404)
+
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path != "/api/health" and not self.authorized():
             self.require_auth()
+            return
+        if h3_batch.route(self, "GET"):
             return
         if parsed.path == "/":
             body = HTML.encode("utf-8")
@@ -354,3 +371,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
