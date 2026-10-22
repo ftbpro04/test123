@@ -27,11 +27,12 @@ if PROFILE not in VALID_PROFILES:
     PROFILE = "full"
 
 MODELS = [
+    {"name":"H3 Character Swap V1.5 LoRA","repo":"akatz-ai/MiniMax-H3-Character-Swap-LoRA","remote_path":"h3_character_swap_v1.5.safetensors","local_dir":"loras","profiles":["full","core","ref2va"]},
     {"name":"Ref2VA Pruned INT8 ConvRot (official)","repo":"Comfy-Org/MiniMax-H3","remote_path":"diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors","local_dir":".","profiles":["full","core","ref2va"]},
     {"name":"MiniMax H3 video VAE FP16","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_video_vae_fp16.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]},
     {"name":"MiniMax H3 audio VAE FP32","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_audio_vae_fp32.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]},
     {"name":"Qwen3-VL 32B Heretic MiniMax H3 NVFP4","repo":"Momoking/Qwen3-VL-32B-Heretic-MiniMax-H3-NVFP4","remote_path":"qwen3vl_32b_heretic_minimax_h3_nvfp4.safetensors","local_dir":"text_encoders","profiles":["full","core","fl2va","ref2va"]},
-    {"name":"FL2V Turbo 8-step 768p LoRA","repo":"lightx2v/Minimax-h3-Turbo","remote_path":"minimax_h3_fl2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors","local_dir":"loras","profiles":["full","core","fl2va"]},
+    {"name":"FL2V Turbo 8-step 768p LoRA","repo":"lightx2v/Minimax-h3-Turbo","remote_path":"minimax_h3_fl2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors","local_dir":"loras","profiles":["full","core","fl2va","ref2va"]},
     {"name":"Ref2V Turbo 8-step 768p LoRA","repo":"lightx2v/Minimax-h3-Turbo","remote_path":"minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors","local_dir":"loras","profiles":["full","core","ref2va"]},
 ]
 

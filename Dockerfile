@@ -56,6 +56,8 @@ RUN mkdir -p /opt/seed/workflows \
        https://raw.githubusercontent.com/Comfy-Org/workflow_templates/main/templates/video_minimax_h3_r2v.json \
        -o /opt/seed/workflows/MiniMax-H3-R2V-Official.json
 
+COPY workflows/MiniMax-H3-Ref2VA-CharacterSwap-V15-PowerLoRA.json /opt/seed/workflows/MiniMax-H3-Ref2VA-CharacterSwap-V15-PowerLoRA.json
+
 COPY scripts/download_models.py /usr/local/bin/download_minimax_models.py
 COPY scripts/dashboard.py /usr/local/bin/minimax-dashboard.py
 COPY scripts/entrypoint.sh /usr/local/bin/minimax-entrypoint.sh
