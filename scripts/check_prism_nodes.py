@@ -8,7 +8,7 @@ import time
 import urllib.request
 
 root = Path(sys.argv[1] if len(sys.argv) > 1 else '/opt/ComfyUI')
-required = {'UNETLoader', 'CLIPLoader', 'VAELoader', 'MiniMaxH3ReferenceToVideo',
+required = {'AILab_QwenVL_Advanced', 'PreviewAny', 'UNETLoader', 'CLIPLoader', 'VAELoader', 'MiniMaxH3ReferenceToVideo',
             'MiniMaxH3AddGuide', 'MiniMaxH3SigmaShift', 'BetaSamplingScheduler',
             'KSamplerSelect', 'SamplerCustomAdvanced', 'BasicGuider', 'RandomNoise',
             'Power Lora Loader (rgthree)', 'ResolutionSelector', 'ComfyMathExpression',
@@ -31,6 +31,10 @@ with tempfile.TemporaryFile(mode='w+') as log:
             missing = required - info.keys()
             if missing:
                 raise RuntimeError('Missing PRISM workflow nodes: ' + ', '.join(sorted(missing)))
+            qwen = info['AILab_QwenVL_Advanced']['input']['required']
+            assert 'Qwen3.5-4B-heretic-v2' in qwen['model_name'][0]
+            assert '4-bit (VRAM-friendly)' in qwen['quantization'][0]
+            assert 'MiniMax › PRISM I2VA' in qwen['preset_prompt'][0]
             for name, fields in {'BetaSamplingScheduler': {'model','steps','alpha','beta'},
                                  'MiniMaxH3SigmaShift': {'model','shift_video','shift_audio'},
                                  'MiniMaxH3AddGuide': {'positive','latent','frame_idx','image','vae'}}.items():

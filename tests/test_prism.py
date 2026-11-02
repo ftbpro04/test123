@@ -58,3 +58,30 @@ class PrismTests(unittest.TestCase):
             self.assertFalse(ns['verify_pinned_model'](model,p))
 
 if __name__=='__main__':unittest.main()
+
+class AutoPromptTests(unittest.TestCase):
+    def test_image_and_text_reach_prompt_then_h3(self):
+        w=json.loads((ROOT/'workflows/MiniMax-H3-PRISM-DMAD-PDMD-I2V-PowerLoRA-AutoPrompt.json').read_text())
+        ns={n['id']:n for n in w['nodes']}
+        for lid,src,slot,dst,inp,kind in w['links']:
+            self.assertIn(lid,ns[src]['outputs'][slot]['links'])
+            self.assertEqual(ns[dst]['inputs'][inp]['link'],lid)
+        self.assertIn([301,138,0,153,0,'STRING'],w['links'])
+        self.assertIn([302,137,0,153,1,'IMAGE'],w['links'])
+        self.assertIn([279,153,0,136,9,'STRING'],w['links'])
+        self.assertIn([303,153,0,154,0,'STRING'],w['links'])
+        self.assertEqual(ns[153]['type'],'AILab_QwenVL_Advanced')
+        self.assertEqual(ns[153]['widgets_values'][0],'Qwen3.5-4B-heretic-v2')
+        self.assertFalse(ns[153]['widgets_values'][13])
+        self.assertFalse(ns[153]['widgets_values'][17])
+        self.assertEqual(ns[124]['widgets_values'],[8,.5,.7])
+        self.assertEqual(ns[151]['widgets_values'],[12.,3.])
+    def test_configuration_preserves_existing_models(self):
+        spec=importlib.util.spec_from_file_location('configure_qwen',ROOT/'scripts/configure_qwen.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'custom_models.json';p.write_text(json.dumps({'hf_vl_models':{'mine':{'repo_id':'my/model'}}}))
+            module.configure(d);module.configure(d)
+            models=json.loads(p.read_text())['hf_vl_models']
+            self.assertEqual(models['mine']['repo_id'],'my/model')
+            self.assertEqual(models['Qwen3.5-4B-heretic-v2']['repo_id'],'tvall43/Qwen3.5-4B-heretic-v2')

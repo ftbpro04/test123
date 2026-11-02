@@ -2,6 +2,19 @@
   "default_profile": "full",
   "models": [
     {
+      "name": "H3 auto-prompt Qwen3.5-4B Heretic vision model",
+      "repo": "tvall43/Qwen3.5-4B-heretic-v2",
+      "remote_path": "Qwen3.5-4B-heretic-v2",
+      "local_dir": "LLM/Qwen-VL",
+      "kind": "prompt_snapshot",
+      "profiles": [
+        "full",
+        "core",
+        "fl2va",
+        "ref2va"
+      ]
+    },
+    {
       "name": "Singularity V2 x 10Eros Max PRISM-DMAD-PDMD INT8",
       "repo": "OliviaRossi/Minimax-h3_Singularity-x-10Eros-Max_PRISM",
       "remote_path": "PRISM_DMAD_PDMD_int8.safetensors",

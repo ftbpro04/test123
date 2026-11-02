@@ -28,6 +28,7 @@ if PROFILE not in VALID_PROFILES:
     PROFILE = "full"
 
 MODELS = [
+    {'name': 'H3 auto-prompt Qwen3.5-4B Heretic vision model', 'repo': 'tvall43/Qwen3.5-4B-heretic-v2', 'remote_path': 'Qwen3.5-4B-heretic-v2', 'local_dir': 'LLM/Qwen-VL', 'kind': 'prompt_snapshot', 'profiles': ['full', 'core', 'fl2va', 'ref2va']},
     {'name': 'Singularity V2 x 10Eros Max PRISM-DMAD-PDMD INT8', 'repo': 'OliviaRossi/Minimax-h3_Singularity-x-10Eros-Max_PRISM', 'remote_path': 'PRISM_DMAD_PDMD_int8.safetensors', 'local_dir': 'diffusion_models', 'profiles': ['full', 'core', 'ref2va', 'fl2va'], 'revision': '4e0e1b17a24638450d4ded398d42dc174a30b9b1', 'expected_size': 20284678584, 'sha256': '948e1d56621f5e76677d515939c716ebf85de8131e4e498013c87ec9e4edba46'},
     {"name":"H3 Character Swap V1.5 LoRA","repo":"akatz-ai/MiniMax-H3-Character-Swap-LoRA","remote_path":"h3_character_swap_v1.5.safetensors","local_dir":"loras","profiles":["full","core","ref2va"]},
     {"name":"Ref2VA Pruned INT8 ConvRot (official)","repo":"Comfy-Org/MiniMax-H3","remote_path":"diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors","local_dir":".","profiles":["full","core","ref2va"]},
@@ -163,6 +164,15 @@ def download_one(m: dict) -> dict:
     name = m["name"]
     target = expected_target(m)
     target.parent.mkdir(parents=True, exist_ok=True)
+
+    if m.get('kind') == 'prompt_snapshot':
+        from provision_qwen_prompt import provision
+        update(name, status='downloading', started_at=now())
+        provision(target)
+        size = sum(p.stat().st_size for p in target.iterdir() if p.is_file())
+        update(name, status='downloaded', path=str(target), size_bytes=size,
+               downloaded_bytes=size, finished_at=now())
+        return state[name]
 
     size = remote_size(m)
     if size:

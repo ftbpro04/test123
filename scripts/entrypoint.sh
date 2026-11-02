@@ -67,6 +67,8 @@ fi
 # Seed curated nodes, but never overwrite anything the user/Manager already changed.
 rsync -a --ignore-existing /opt/seed/custom_nodes/ "$DATA_ROOT/custom_nodes/" || true
 
+python /usr/local/bin/configure_qwen.py "$DATA_ROOT/custom_nodes/ComfyUI-QwenVL-Mod"
+
 # Seed starter workflows without overwriting user's versions.
 rsync -a --ignore-existing /opt/seed/workflows/ "$DATA_ROOT/user/default/workflows/" || true
 

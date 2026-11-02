@@ -89,6 +89,16 @@ Preset: Euler, BetaSamplingScheduler alpha 0.5 / beta 0.7 (Beta57), 8 steps, vid
 
 The template reuses its H3 video/audio VAEs, Qwen text encoder, rgthree and helper nodes. ComfyUI is built from commit `bb878b9ee35274e67931634ba9e8c338f8c06035` so the native guide, shift and Beta scheduler nodes are present even with startup updates disabled. A CPU registration check runs during the Docker build. No additional inference server or prompt LLM is required by this workflow.
 
-Image tag after publication: `ghcr.io/ftbpro04/vast-minimax-h3:singularity-prism-dmad-20261102-r2` (also published as `latest`). Existing running containers need the new image to receive the installer/workflow. Preserve the `/workspace` volume.
+Image tag after publication: `ghcr.io/ftbpro04/vast-minimax-h3:singularity-prism-dmad-autoprompt-20261102` (also published as `latest`). Existing running containers need the new image to receive the installer/workflow. Preserve the `/workspace` volume.
 
 Sources: https://civitai.red/models/3019421?modelVersionId=3445524 and https://huggingface.co/OliviaRossi/Minimax-h3_Singularity-x-10Eros-Max_PRISM .
+
+## PRISM image-aware auto-prompt workflow
+
+Open `MiniMax-H3-PRISM-DMAD-PDMD-I2V-PowerLoRA-AutoPrompt.json`. Enter a short idea in **SHORT IDEA** and upload the starting image. The original `AILab_QwenVL_Advanced` node expands both inputs with `Qwen3.5-4B-heretic-v2` in 4-bit, sends its response into H3, and displays it in **Expanded H3 prompt preview**. `keep_model_loaded=false` releases Qwen after inference. Power LoRA remains connected to the video model.
+
+The default preset is MiniMax PRISM I2VA. Qwen and video duration both start at 5 seconds; change both duration controls together. For literal text, set Qwen `passthrough=true`. Keep its seed above 1 (default 42), because upstream treats seed 1 as text-only caching. The template registers the original 4B checkpoint even when upstream removes it from its model catalog.
+
+The model downloader now provisions the pinned Qwen snapshot plus the original Qwen image/video processor configs in `models/LLM/Qwen-VL/Qwen3.5-4B-heretic-v2`. Wait for the auto-prompt model to be ready before queuing. This adds roughly 9 GB to the model downloads. The build checks Qwen node registration, the chosen model/preset, and CPU image tokenization. GPU prompt/video generation remains untested here.
+
+The PRISM master instructions are editable in `/workspace/ComfyUI/custom_nodes/ComfyUI-QwenVL-Mod/presets/h3_prism.json`. This file is seeded once and preserved. Restart ComfyUI after editing it.

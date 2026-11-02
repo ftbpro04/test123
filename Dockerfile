@@ -45,6 +45,9 @@ RUN chmod +x /tmp/install_custom_nodes.sh \
     && /tmp/install_custom_nodes.sh /opt/ComfyUI/custom_nodes \
     && rm /tmp/install_custom_nodes.sh
 
+COPY scripts/configure_qwen.py scripts/provision_qwen_prompt.py /usr/local/bin/
+RUN python /usr/local/bin/configure_qwen.py /opt/ComfyUI/custom_nodes/ComfyUI-QwenVL-Mod
+
 RUN mkdir -p /opt/seed/custom_nodes \
     && rsync -a /opt/ComfyUI/custom_nodes/ /opt/seed/custom_nodes/
 
@@ -61,7 +64,7 @@ RUN mkdir -p /opt/seed/workflows \
 
 COPY workflows/ /opt/seed/workflows/
 COPY scripts/check_prism_nodes.py /tmp/check_prism_nodes.py
-RUN python /tmp/check_prism_nodes.py /opt/ComfyUI && rm /tmp/check_prism_nodes.py
+RUN python /tmp/check_prism_nodes.py /opt/ComfyUI && python /usr/local/bin/provision_qwen_prompt.py && rm /tmp/check_prism_nodes.py
 
 COPY scripts/download_models.py /usr/local/bin/download_minimax_models.py
 COPY scripts/h3_batch.py scripts/h3_batch.html /usr/local/bin/

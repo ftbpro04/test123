@@ -55,4 +55,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ steps.owner.outputs.name }}/vast-minimax-h3:latest
-            ghcr.io/${{ steps.owner.outputs.name }}/vast-minimax-h3:singularity-prism-dmad-20261102-r2
+            ghcr.io/${{ steps.owner.outputs.name }}/vast-minimax-h3:singularity-prism-dmad-autoprompt-20261102
