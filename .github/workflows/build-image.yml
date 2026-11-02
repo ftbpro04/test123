@@ -7,6 +7,8 @@ on:
     paths:
       - "Dockerfile"
       - "scripts/**"
+      - "workflows/**"
+      - "MODEL_MANIFEST.json"
       - ".github/workflows/build-image.yml"
 
 permissions:
@@ -19,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Validate model manifest and workflow wiring
+        run: python -m unittest discover -s tests -p test_prism.py -v
       - name: Free disk space for CUDA image
         shell: bash
         run: |
@@ -51,3 +55,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ steps.owner.outputs.name }}/vast-minimax-h3:latest
+            ghcr.io/${{ steps.owner.outputs.name }}/vast-minimax-h3:singularity-prism-dmad-20261102

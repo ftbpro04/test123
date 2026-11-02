@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import sys
 import threading
@@ -27,6 +28,7 @@ if PROFILE not in VALID_PROFILES:
     PROFILE = "full"
 
 MODELS = [
+    {'name': 'Singularity V2 x 10Eros Max PRISM-DMAD-PDMD INT8', 'repo': 'OliviaRossi/Minimax-h3_Singularity-x-10Eros-Max_PRISM', 'remote_path': 'PRISM_DMAD_PDMD_int8.safetensors', 'local_dir': 'diffusion_models', 'profiles': ['full', 'core', 'ref2va', 'fl2va'], 'revision': '4e0e1b17a24638450d4ded398d42dc174a30b9b1', 'expected_size': 20284678584, 'sha256': '948e1d56621f5e76677d515939c716ebf85de8131e4e498013c87ec9e4edba46'},
     {"name":"H3 Character Swap V1.5 LoRA","repo":"akatz-ai/MiniMax-H3-Character-Swap-LoRA","remote_path":"h3_character_swap_v1.5.safetensors","local_dir":"loras","profiles":["full","core","ref2va"]},
     {"name":"Ref2VA Pruned INT8 ConvRot (official)","repo":"Comfy-Org/MiniMax-H3","remote_path":"diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors","local_dir":".","profiles":["full","core","ref2va"]},
     {"name":"MiniMax H3 video VAE FP16","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_video_vae_fp16.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]},
@@ -93,8 +95,10 @@ def update(name: str, **fields) -> None:
 
 
 def remote_size(m: dict) -> int | None:
+    if m.get("expected_size"):
+        return m["expected_size"]
     try:
-        meta = get_hf_file_metadata(hf_hub_url(m["repo"], m["remote_path"]), token=HF_TOKEN)
+        meta = get_hf_file_metadata(hf_hub_url(m["repo"], m["remote_path"], revision=m.get("revision")), token=HF_TOKEN)
         return int(meta.size) if meta.size is not None else None
     except Exception as exc:
         print(f"[models] SIZE? {m['name']}: {exc}", flush=True)
@@ -132,6 +136,29 @@ def progress_class(model_name: str):
     return DashboardTqdm
 
 
+def verify_pinned_model(m: dict, target: Path) -> bool:
+    if not target.is_file() or target.stat().st_size != m['expected_size']:
+        return False
+    stat = target.stat()
+    marker = target.with_suffix(target.suffix + '.verified.json')
+    identity = {'sha256': m['sha256'], 'size': stat.st_size, 'mtime_ns': stat.st_mtime_ns}
+    try:
+        if json.loads(marker.read_text()) == identity:
+            return True
+    except (OSError, ValueError):
+        pass
+    digest = hashlib.sha256()
+    with target.open('rb') as stream:
+        for block in iter(lambda: stream.read(8 * 1024 * 1024), b''):
+            digest.update(block)
+    if digest.hexdigest() != m['sha256']:
+        return False
+    tmp = marker.with_suffix('.tmp')
+    tmp.write_text(json.dumps(identity))
+    os.replace(tmp, marker)
+    return True
+
+
 def download_one(m: dict) -> dict:
     name = m["name"]
     target = expected_target(m)
@@ -141,7 +168,8 @@ def download_one(m: dict) -> dict:
     if size:
         update(name, size_bytes=size)
 
-    if target.exists() and target.stat().st_size > 1024 * 1024:
+    valid = verify_pinned_model(m, target) if m.get('sha256') else (target.exists() and target.stat().st_size > 1024 * 1024)
+    if valid:
         update(name, status="present", path=str(target), downloaded_bytes=target.stat().st_size, finished_at=now())
         print(f"[models] SKIP  {name} -> {target}", flush=True)
         return state[name]
@@ -154,6 +182,8 @@ def download_one(m: dict) -> dict:
     downloaded = hf_hub_download(
         repo_id=m["repo"],
         filename=m["remote_path"],
+        revision=m.get("revision"),
+        force_download=bool(m.get("sha256") and target.exists()),
         local_dir=str(local_dir),
         token=HF_TOKEN,
         tqdm_class=progress_class(name),
@@ -165,6 +195,8 @@ def download_one(m: dict) -> dict:
             target.parent.mkdir(parents=True, exist_ok=True)
             got.replace(target)
 
+    if m.get("sha256") and not verify_pinned_model(m, target):
+        raise RuntimeError("Downloaded checkpoint failed pinned size/SHA256 verification")
     actual = target.stat().st_size if target.exists() else 0
     update(name, status="downloaded", path=str(target), downloaded_bytes=actual, finished_at=now())
     print(f"[models] DONE  {name} -> {target}", flush=True)

@@ -2,7 +2,7 @@ FROM pytorch/pytorch:2.10.0-cuda13.0-cudnn9-devel
 
 # MiniMax H3 Vast dashboard image
 ARG DEBIAN_FRONTEND=noninteractive
-ARG COMFY_REF=8d534945ebd53cff61e8def81757c6a6c1b9cf2d
+ARG COMFY_REF=bb878b9ee35274e67931634ba9e8c338f8c06035
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -27,6 +27,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 libglib2.0-0 libsm6 libxext6 libxrender1 \
     && git lfs install \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python -c "from importlib.metadata import version; print('\n'.join(name + '==' + version(name) for name in ('torch', 'torchvision', 'torchaudio', 'triton')))" > /opt/torch-constraints.txt
+ENV PIP_CONSTRAINT=/opt/torch-constraints.txt UV_CONSTRAINT=/opt/torch-constraints.txt
 
 WORKDIR /opt
 RUN git clone https://github.com/Comfy-Org/ComfyUI.git ComfyUI \
@@ -56,7 +59,9 @@ RUN mkdir -p /opt/seed/workflows \
        https://raw.githubusercontent.com/Comfy-Org/workflow_templates/main/templates/video_minimax_h3_r2v.json \
        -o /opt/seed/workflows/MiniMax-H3-R2V-Official.json
 
-COPY workflows/MiniMax-H3-Ref2VA-CharacterSwap-V15-PowerLoRA.json /opt/seed/workflows/MiniMax-H3-Ref2VA-CharacterSwap-V15-PowerLoRA.json
+COPY workflows/ /opt/seed/workflows/
+COPY scripts/check_prism_nodes.py /tmp/check_prism_nodes.py
+RUN python /tmp/check_prism_nodes.py /opt/ComfyUI && rm /tmp/check_prism_nodes.py
 
 COPY scripts/download_models.py /usr/local/bin/download_minimax_models.py
 COPY scripts/h3_batch.py scripts/h3_batch.html /usr/local/bin/
