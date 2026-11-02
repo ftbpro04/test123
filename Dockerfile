@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && git lfs install \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -c "from importlib.metadata import version; print('\n'.join(name + '==' + version(name) for name in ('torch', 'torchvision', 'torchaudio', 'triton')))" > /opt/torch-constraints.txt
+RUN python -c "from importlib.metadata import version; print('\n'.join(name + '==' + version(name) for name in ('torch', 'torchvision', 'torchaudio', 'triton', 'cuda-bindings')))" > /opt/torch-constraints.txt
 ENV PIP_CONSTRAINT=/opt/torch-constraints.txt UV_CONSTRAINT=/opt/torch-constraints.txt
 
 WORKDIR /opt

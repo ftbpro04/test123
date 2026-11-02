@@ -89,6 +89,6 @@ Preset: Euler, BetaSamplingScheduler alpha 0.5 / beta 0.7 (Beta57), 8 steps, vid
 
 The template reuses its H3 video/audio VAEs, Qwen text encoder, rgthree and helper nodes. ComfyUI is built from commit `bb878b9ee35274e67931634ba9e8c338f8c06035` so the native guide, shift and Beta scheduler nodes are present even with startup updates disabled. A CPU registration check runs during the Docker build. No additional inference server or prompt LLM is required by this workflow.
 
-Image tag after publication: `ghcr.io/ftbpro04/vast-minimax-h3:singularity-prism-dmad-20261102` (also published as `latest`). Existing running containers need the new image to receive the installer/workflow. Preserve the `/workspace` volume.
+Image tag after publication: `ghcr.io/ftbpro04/vast-minimax-h3:singularity-prism-dmad-20261102-r2` (also published as `latest`). Existing running containers need the new image to receive the installer/workflow. Preserve the `/workspace` volume.
 
 Sources: https://civitai.red/models/3019421?modelVersionId=3445524 and https://huggingface.co/OliviaRossi/Minimax-h3_Singularity-x-10Eros-Max_PRISM .
