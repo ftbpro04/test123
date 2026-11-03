@@ -1,0 +1,179 @@
+{
+  "packages": [
+    {
+      "repo": "Comfy-Org/ComfyUI",
+      "commit": "52f98af2e2e42c421070a3e147c161c47cdeaf22",
+      "directory": "ComfyUI",
+      "workflow_types": [
+        "42242bc4-ef2d-4b1e-8275-b70f4d668752",
+        "AdjustContrast",
+        "AudioAdjustVolume",
+        "CFGGuider",
+        "CLIPTextEncode",
+        "CheckpointLoaderSimple",
+        "DualCLIPLoader",
+        "EmptyLTXVLatentVideo",
+        "GLSLShader",
+        "GetImageSize",
+        "KSampler",
+        "KSamplerSelect",
+        "LTXAVTextEncoderLoader",
+        "LTXVAudioVAEDecode",
+        "LTXVAudioVAEEncode",
+        "LTXVAudioVAELoader",
+        "LTXVConcatAVLatent",
+        "LTXVConditioning",
+        "LTXVCropGuides",
+        "LTXVEmptyLatentAudio",
+        "LTXVLatentUpsampler",
+        "LTXVSeparateAVLatent",
+        "LatentUpscaleModelLoader",
+        "LoadImage",
+        "LoraLoaderModelOnly",
+        "ManualSigmas",
+        "PrimitiveFloat",
+        "PrimitiveInt",
+        "RandomNoise",
+        "ResizeImageMaskNode",
+        "SamplerCustomAdvanced",
+        "SetLatentNoiseMask",
+        "SolidMask",
+        "UNETLoader",
+        "VAEDecode",
+        "VAELoader"
+      ],
+      "workflow_versions": [
+        "0.14.1",
+        "0.16.0",
+        "0.20.1",
+        "0.3.56",
+        "0.3.60",
+        "0.3.68",
+        "0.3.71",
+        "0.3.75",
+        "0.5.1",
+        "0.7.0",
+        "0.8.0",
+        "0.9.2"
+      ],
+      "pin_basis": "existing ComfyUI pin or workflow commit"
+    },
+    {
+      "repo": "kijai/ComfyUI-KJNodes",
+      "commit": "4dfb85dcc52e4315c33170d97bb987baa46d128b",
+      "directory": "ComfyUI-KJNodes",
+      "workflow_types": [
+        "GetNode",
+        "ImageResizeKJv2",
+        "SetNode"
+      ],
+      "workflow_versions": [
+        "4dfb85dcc52e4315c33170d97bb987baa46d128b"
+      ],
+      "pin_basis": "existing ComfyUI pin or workflow commit"
+    },
+    {
+      "repo": "Lightricks/ComfyUI-LTXVideo",
+      "commit": "548a39373bc2fdb880a233944e4621efb1a8950e",
+      "directory": "ComfyUI-LTXVideo",
+      "workflow_types": [
+        "LTXAddVideoICLoRAGuide",
+        "LTXICLoRALoaderModelOnly",
+        "LTXVImgToVideoConditionOnly",
+        "STGGuiderAdvanced"
+      ],
+      "workflow_versions": [
+        "2acf7af8991f33b5cc06ec26753cb6e88e057d04",
+        "82bd963cdeb66d023bed8c99324a307020907ef8"
+      ],
+      "pin_basis": "Upstream core RoPE compatibility fix; original workflow pin fails import against pinned ComfyUI. CPU registration CI required."
+    },
+    {
+      "repo": "rgthree/rgthree-comfy",
+      "commit": "d7297b42f0fa78bec1c0411478f887423c249502",
+      "directory": "rgthree-comfy",
+      "workflow_types": [
+        "Power Lora Loader (rgthree)",
+        "Seed (rgthree)"
+      ],
+      "workflow_versions": [
+        "1.0.2511270846",
+        "1.0.2512112053"
+      ],
+      "pin_basis": "current repository commit, source inspected; runtime validation pending"
+    },
+    {
+      "repo": "Kosinkadink/ComfyUI-VideoHelperSuite",
+      "commit": "4d907bee61e92c2e65af3bd6383a4e4d356126d1",
+      "directory": "ComfyUI-VideoHelperSuite",
+      "workflow_types": [
+        "VHS_VideoCombine"
+      ],
+      "workflow_versions": [
+        "1.7.9"
+      ],
+      "pin_basis": "current repository commit, source inspected; runtime validation pending"
+    },
+    {
+      "repo": "Comfy-Org/ComfyUI-Manager",
+      "commit": "e848c5edf7d33e3497512dce779df59373f5fa0c",
+      "directory": "ComfyUI-Manager",
+      "workflow_types": [],
+      "workflow_versions": [],
+      "pin_basis": "current repository commit, source inspected; runtime validation pending"
+    },
+    {
+      "repo": "MoonGoblinDev/Civicomfy",
+      "commit": "555e984bbcb02fc955075cb8eb699a6884c51239",
+      "directory": "Civicomfy",
+      "workflow_types": [],
+      "workflow_versions": [],
+      "pin_basis": "current repository commit, source inspected; runtime validation pending"
+    },
+    {
+      "repo": "huchukato/ComfyUI-HuggingFace",
+      "commit": "21238c483738fcabd6cf28c356e4601e129b740d",
+      "directory": "ComfyUI-HuggingFace",
+      "workflow_types": [],
+      "workflow_versions": [],
+      "pin_basis": "current repository commit, source inspected; runtime validation pending"
+    },
+    {
+      "repo": "evanspearman/ComfyMath",
+      "commit": "c01177221c31b8e5fbc062778fc8254aeb541638",
+      "directory": "ComfyMath",
+      "workflow_types": [
+        "CM_FloatToInt"
+      ],
+      "workflow_versions": [
+        "c01177221c31b8e5fbc062778fc8254aeb541638"
+      ],
+      "pin_basis": "existing ComfyUI pin or workflow commit"
+    },
+    {
+      "repo": "ClownsharkBatwing/RES4LYF",
+      "commit": "0dc91c00c4c3fb38e7874fcd7a2a327765e8882c",
+      "directory": "RES4LYF",
+      "workflow_types": [
+        "Sigmas Easing"
+      ],
+      "workflow_versions": [
+        "0dc91c00c4c3fb38e7874fcd7a2a327765e8882c"
+      ],
+      "pin_basis": "existing ComfyUI pin or workflow commit"
+    },
+    {
+      "repo": "TenStrip/10S-Comfy-nodes",
+      "commit": "f5f8221d9745166e79de775af0949817283f2ea0",
+      "directory": "10S-Comfy-nodes",
+      "workflow_types": [
+        "LatentMotionSharpener",
+        "LatentTemporalInpainter"
+      ],
+      "workflow_versions": [
+        "f5f8221d9745166e79de775af0949817283f2ea0"
+      ],
+      "pin_basis": "existing ComfyUI pin or workflow commit"
+    }
+  ]
+}
