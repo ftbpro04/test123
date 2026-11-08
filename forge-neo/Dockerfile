@@ -1,9 +1,11 @@
 FROM pytorch/pytorch:2.10.0-cuda13.0-cudnn9-devel
 ARG NEO_REF=4f4284b02a5c814b81c328c64ed7e99a139f21ef
 ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1 WORKSPACE=/workspace NEO_PERSIST_ROOT=/workspace/neo-data DASHBOARD_PORT=18080 WEBUI_PORT=7860 JUPYTER_PORT=8888
-RUN apt-get update && apt-get install -y --no-install-recommends git curl aria2 ffmpeg libgl1 libglib2.0-0 tini rsync && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends git curl aria2 ffmpeg libgl1 libglib2.0-0 tini rsync python3-venv && rm -rf /var/lib/apt/lists/*
 RUN python -c "import importlib.metadata as m;open('/opt/constraints.txt','w').write('\n'.join(p+'=='+m.version(p) for p in ['torch','torchvision']))"
-ENV PIP_CONSTRAINT=/opt/constraints.txt
+RUN python -m venv --system-site-packages /opt/venv
+ENV VIRTUAL_ENV=/opt/venv PATH=/opt/venv/bin:$PATH PIP_CONSTRAINT=/opt/constraints.txt
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN git clone https://github.com/Haoming02/sd-webui-forge-classic.git /opt/forge-neo && cd /opt/forge-neo && git checkout "$NEO_REF"
 COPY . /opt/template
 RUN python /opt/template/install_extensions.py
