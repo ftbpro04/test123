@@ -1,13 +1,13 @@
 [
   {
     "name": "sd-civitai-browser-plus",
-    "url": "https://github.com/BlafKing/sd-civitai-browser-plus.git",
-    "ref": "b3d3ecf2684d5cb5ebecfddd4c3c63ac4701f5c5"
+    "url": "https://github.com/eduardoabreu81/sd-civitai-browser-neo.git",
+    "ref": "bccaaa78a3549944a302414d857bc5936a631ae5"
   },
   {
     "name": "sd-dynamic-prompts",
-    "url": "https://github.com/adieyal/sd-dynamic-prompts.git",
-    "ref": "de056ff8d80e4ad120e13a90cf200f3383f427c6"
+    "url": "https://github.com/abzaloff/sd-dynamic-prompts.git",
+    "ref": "3e62452776f52e2c641c2c52d3cd908140c3743e"
   },
   {
     "name": "a1111-sd-webui-tagcomplete",
