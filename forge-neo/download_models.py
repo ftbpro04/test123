@@ -9,6 +9,7 @@ SPECS=[
  {'name':'qwen_3_06b_base.safetensors','folder':'text_encoder','url':'https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/text_encoders/qwen_3_06b_base.safetensors'},
  {'name':'qwen_image_vae.safetensors','folder':'VAE','url':'https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors'}]
 SPECS += [
+ {'name':'Breast Size Slider','model_id':2692638,'kind':'LORA','folder':'Lora','version_id':'3144574'},
  {'name':'4x-AnimeSharp.pth','folder':'ESRGAN','format':'pth','sha':'e7a7de2dafd7331c1992862bbbcd9e9712a9f9f8e6303f0aaa59b4341d359bab','url':'https://huggingface.co/Kim2091/AnimeSharp/resolve/7696d95ced82b0c1f2a41f6ac73336133f0a90e1/4x-AnimeSharp.pth'},
  {'name':'4x-UltraSharp.pth','folder':'ESRGAN','format':'pth','sha':'a5812231fc936b42af08a5edba784195495d303d5b3248c24489ef0c4021fe01','url':'https://huggingface.co/lokCX/4x-Ultrasharp/resolve/1856559b50de25116a7c07261177dd128f1f5664/4x-UltraSharp.pth'}
 ]
@@ -39,11 +40,12 @@ def valid(path,sha=None,format="safetensors"):
  except Exception:return False
 
 def resolve(s):
- cache=ROOT/'metadata'/f"{s['model_id']}-{os.getenv(s['version_env']) or 'selected'}.json"
+ pin=str(s['version_id']) if s.get('version_id') else os.getenv(s.get('version_env',''))
+ cache=ROOT/'metadata'/f"{s['model_id']}-{pin or 'selected'}.json"
  if cache.exists():return json.loads(cache.read_text())
  d=get(f"https://civitai.com/api/v1/models/{s['model_id']}").json()
  if d.get('type','').lower()!=s['kind'].lower():raise RuntimeError('Unexpected model type')
- versions=d.get('modelVersions',[]);pin=os.getenv(s['version_env'])
+ versions=d.get('modelVersions',[])
  versions=[v for v in versions if (not pin or str(v['id'])==pin) and 'anima' in v.get('baseModel','').lower()]
  if not versions:raise RuntimeError('No matching Anima version; set explicit version ID')
  v=versions[0];files=[f for f in v['files'] if f.get('type')=='Model' and f['name'].endswith('.safetensors')]
