@@ -18,5 +18,10 @@
     "name": "sd-webui-infinite-image-browsing",
     "url": "https://github.com/zanllp/infinite-image-browsing.git",
     "ref": "3d0c2400ee0cbb8cb1711e8faf5736ef6352cdcf"
+  },
+  {
+    "name": "ADetailer-Neo",
+    "url": "https://github.com/Haoming02/ADetailer-Neo.git",
+    "ref": "af228eba7a3f3691a25bcd1fc94aa95e600dd3e6"
   }
 ]

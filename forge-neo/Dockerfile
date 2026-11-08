@@ -13,6 +13,7 @@ WORKDIR /opt/forge-neo
 # Follow Neo's own installer order: install Gradio, then enforce Neo requirements.
 RUN python -m pip install --no-cache-dir 'gradio==4.40.0' 'gradio_rangeslider==0.0.8'
 RUN python -m pip install --no-cache-dir -r requirements.txt jupyterlab requests && python launch.py --skip-torch-cuda-test --exit
+RUN python -c "import ultralytics, mediapipe; from ultralytics import YOLO; from mediapipe.tasks.python import vision; print(ultralytics.__version__, mediapipe.__version__)"
 RUN python -c "import gradio, PIL, torch; from gradio import Blocks; print(gradio.__version__, PIL.__version__)"
 RUN python -c "import torch; assert torch.version.cuda.startswith('13.'); print(torch.__version__,torch.version.cuda)" && bash -n /opt/template/entrypoint.sh
 EXPOSE 18080 7860 8888
