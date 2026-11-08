@@ -1,0 +1,22 @@
+[
+  {
+    "name": "sd-civitai-browser-plus",
+    "url": "https://github.com/BlafKing/sd-civitai-browser-plus.git",
+    "ref": "b3d3ecf2684d5cb5ebecfddd4c3c63ac4701f5c5"
+  },
+  {
+    "name": "sd-dynamic-prompts",
+    "url": "https://github.com/adieyal/sd-dynamic-prompts.git",
+    "ref": "de056ff8d80e4ad120e13a90cf200f3383f427c6"
+  },
+  {
+    "name": "a1111-sd-webui-tagcomplete",
+    "url": "https://github.com/DominikDoom/a1111-sd-webui-tagcomplete.git",
+    "ref": "4170882f90b47be130a0ff9314f663c230b9153d"
+  },
+  {
+    "name": "sd-webui-infinite-image-browsing",
+    "url": "https://github.com/zanllp/infinite-image-browsing.git",
+    "ref": "3d0c2400ee0cbb8cb1711e8faf5736ef6352cdcf"
+  }
+]
