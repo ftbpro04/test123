@@ -33,8 +33,7 @@ jupyter lab --config="$WORKSPACE/jupyter-config.json" >> "$WORKSPACE/logs/jupyte
   echo "$downloader" > "$WORKSPACE/logs/neo-model-download.pid"
   if ! wait "$downloader"; then
     rm -f "$WORKSPACE/logs/neo-model-download.pid"
-    echo 'Model setup failed. Correct the token/version in Vast settings and restart. Dashboard and Jupyter remain available.'
-    exit 1
+    echo 'One or more model downloads failed. Starting Forge anyway; check the dashboard model errors. Failed models will be retried on restart.'
   fi
   rm -f "$WORKSPACE/logs/neo-model-download.pid"
   printf 'neo:%s\n' "$DASHBOARD_PASSWORD" > "$NEO_PERSIST_ROOT/webui-auth.txt"

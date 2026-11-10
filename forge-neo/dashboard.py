@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import ast
+import re
 import base64
 import hmac
 import json
@@ -22,7 +24,7 @@ WEBUI_PORT = int(os.getenv("WEBUI_PORT", "7860"))
 JUPYTER_PORT = int(os.getenv("JUPYTER_PORT", "8888"))
 DASHBOARD_PORT = int(os.getenv("DASHBOARD_PORT", "18080"))
 PROFILE = "Anima Turbo"
-BASE_IMAGE = os.getenv("NEO_BASE_IMAGE", "antilopax/neo:v14")
+BASE_IMAGE = os.getenv("NEO_BASE_IMAGE", "ghcr.io/ftbpro04/vast-forge-neo:anima-v2")
 DASHBOARD_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "")
 
 LOG_FILES = {
@@ -79,19 +81,15 @@ HTML = r'''<!doctype html>
 
     <section class="card logs">
       <div class="title">Live logs</div>
-      <div class="tabs">
-        <button class="tab active" data-log="models">Models</button>
-        <button class="tab" data-log="container">Forge Neo / container</button>
-        <button class="tab" data-log="jupyter">Jupyter</button>
-        <button class="tab" data-log="dashboard">Dashboard</button>
-      </div>
+      <button class="tab" id="copyLogs">Copy all logs</button>
+      <span id="copyStatus" class="tiny"></span>
       <pre id="logBox" class="log">Loading…</pre>
     </section>
   </div>
   <div class="footer">Auto-refreshes every 1.5 seconds · Dashboard port 18080</div>
 </div>
 <script>
-let activeLog='models';
+
 const $=id=>document.getElementById(id);
 const fmtGB=n=>Number.isFinite(n)?(n/1024).toFixed(1)+' GB':'—';
 function extUrl(host,publicPort,path=''){
@@ -114,7 +112,7 @@ function renderModels(m){
   },0);
   const pct=totalBytes>0?Math.min(100,Math.round(doneBytes/totalBytes*100)):(rows.length?Math.round(ready/rows.length*100):0);
   const bytesText=totalBytes>0?` · ${(doneBytes/1024/1024/1024).toFixed(1)} / ${(totalBytes/1024/1024/1024).toFixed(1)} GB`:'';
-  $('modelSummary').textContent=rows.length?`${ready} of ${rows.length} models ready${bytesText}`:'No models selected';
+  $('modelSummary').textContent=rows.length?`${ready} of ${rows.length} models ready${bytesText}`:'Waiting for model status…';
   $('modelPct').textContent=pct+'%'; $('modelBar').style.width=pct+'%';
   for(const x of rows){
     const st=(x.status||'queued').toLowerCase();
@@ -153,13 +151,25 @@ async function status(){
     if(jupyter){$('jupyterBtn').href=jupyter;$('jupyterBtn').classList.remove('disabled')}
     renderModels(s.models);
     const allGood=s.services.comfy && s.services.jupyter && (s.models.complete || s.services.downloader);
-    $('overallDot').className='dot '+(allGood?'ok':''); $('overallText').textContent=s.models.complete&&s.services.comfy?'Ready':'Starting / downloading';
+    $('overallDot').className='dot '+(allGood?'ok':''); $('overallText').textContent=s.models.models.some(x=>x.status==='error')?(s.services.comfy?'Running · model download errors':'Model download errors'):s.models.complete&&s.services.comfy?'Ready':'Starting / downloading';
   }catch(e){$('overallDot').className='dot bad';$('overallText').textContent='Dashboard API error'}
 }
 async function logs(){
-  try{const box=$('logBox');const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;const r=await fetch(`/api/log?name=${encodeURIComponent(activeLog)}&lines=260`,{cache:'no-store'});const d=await r.json();box.textContent=d.text||'(no log output yet)';if(nearBottom)box.scrollTop=box.scrollHeight}catch(e){}
+  try{const box=$('logBox');const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;const r=await fetch('/api/log?name=all&lines=260',{cache:'no-store'});const d=await r.json();box.textContent=d.text||'(no log output yet)';if(nearBottom)box.scrollTop=box.scrollHeight}catch(e){}
 }
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeLog=b.dataset.log;logs()}));
+$('copyLogs').addEventListener('click',async()=>{
+  try {
+    const r=await fetch('/api/log?name=all&full=1',{cache:'no-store'});
+    if(!r.ok) throw new Error('Log request failed');
+    const d=await r.json();
+    if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(d.text);
+    else {
+      const t=document.createElement('textarea');t.value=d.text;document.body.appendChild(t);t.select();
+      const ok=document.execCommand('copy');t.remove();if(!ok)throw new Error('Clipboard blocked');
+    }
+    $('copyStatus').textContent='All logs copied';
+  } catch(e){$('copyStatus').textContent='Copy failed: '+e.message;}
+});
 status();logs();setInterval(status,1500);setInterval(logs,1500);
 </script>
 </body></html>'''
@@ -254,6 +264,19 @@ def load_model_status() -> dict:
     except Exception:
         pass
     rows = data.get("models") or []
+    # Read the manifest without importing downloader dependencies or starting downloads.
+    try:
+        tree = ast.parse(Path(__file__).with_name('download_models.py').read_text())
+        specs = []
+        for n in tree.body:
+            if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'SPECS' for t in n.targets):
+                specs = ast.literal_eval(n.value)
+            elif isinstance(n, ast.AugAssign) and isinstance(n.target, ast.Name) and n.target.id == 'SPECS':
+                specs += ast.literal_eval(n.value)
+        if not rows:
+            rows = [dict(name=x['name'], status='queued') for x in specs]
+    except Exception:
+        pass
     ready = sum(1 for r in rows if str(r.get("status", "")).lower() in {"present", "downloaded", "ready"})
     complete = bool(rows) and ready == len(rows) and not any(str(r.get("status", "")).lower() == "error" for r in rows)
     return {"profile": PROFILE, "models": rows, "ready": ready, "total": len(rows), "complete": complete}
@@ -271,6 +294,23 @@ def tail(path: Path, lines: int = 250, max_bytes: int = 256 * 1024) -> str:
         return ""
     except Exception as exc:
         return f"Unable to read log: {exc}"
+
+
+def combined_logs(full=False, lines=260):
+    sections = []
+    for name, path in LOG_FILES.items():
+        try:
+            content = path.read_text(errors='replace') if full else tail(path, lines)
+        except OSError:
+            content = ''
+        sections.append('===== '+name.upper()+' =====\n'+(content or '(no output yet)'))
+    text = '\n\n'.join(sections)
+    text = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', text)
+    for secret in [DASHBOARD_PASSWORD, read_token(), os.getenv('CIVITAI_API_KEY',''), os.getenv('HF_TOKEN','')]:
+        if secret:
+            text = text.replace(secret, '[REDACTED]')
+    text = re.sub(r'([?&](?:token|api_key)=)[^\s&]+', r'\1[REDACTED]', text, flags=re.I)
+    return text
 
 
 def public_port(internal: int) -> int | None:
@@ -324,7 +364,8 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, fmt: str, *args) -> None:
-        print(f"[dashboard] {self.address_string()} - {fmt % args}", flush=True)
+        if "/api/" not in str(args):
+            print(f"[dashboard] {self.address_string()} - {fmt % args}", flush=True)
 
     def send_json(self, obj, status=200):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -383,6 +424,9 @@ class Handler(BaseHTTPRequestHandler):
                 lines = max(20, min(int((q.get("lines") or ["250"])[0]), 1000))
             except ValueError:
                 lines = 250
+            if name == 'all':
+                self.send_json({'name':'all', 'text':combined_logs((q.get('full') or ['0'])[0]=='1', lines)})
+                return
             if name not in LOG_FILES:
                 self.send_json({"error": "unknown log"}, 404)
                 return
