@@ -9,6 +9,8 @@ SPECS=[
  {'name':'qwen_3_06b_base.safetensors','folder':'text_encoder','url':'https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/text_encoders/qwen_3_06b_base.safetensors'},
  {'name':'qwen_image_vae.safetensors','folder':'VAE','url':'https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors'}]
 SPECS += [
+ {'name':'Nova 3DCG AM','model_id':2678095,'kind':'Checkpoint','folder':'Stable-diffusion','version_id':'3370060'},
+ {'name':'General Butch GB Style Anima','model_id':2715148,'kind':'LORA','folder':'Lora','version_id':'3050606'},
  {'name':'Breast Size Slider','model_id':2692638,'kind':'LORA','folder':'Lora','version_id':'3144574'},
  {'name':'4x-AnimeSharp.pth','folder':'ESRGAN','format':'pth','sha':'e7a7de2dafd7331c1992862bbbcd9e9712a9f9f8e6303f0aaa59b4341d359bab','url':'https://huggingface.co/Kim2091/AnimeSharp/resolve/7696d95ced82b0c1f2a41f6ac73336133f0a90e1/4x-AnimeSharp.pth'},
  {'name':'4x-UltraSharp.pth','folder':'ESRGAN','format':'pth','sha':'a5812231fc936b42af08a5edba784195495d303d5b3248c24489ef0c4021fe01','url':'https://huggingface.co/lokCX/4x-Ultrasharp/resolve/1856559b50de25116a7c07261177dd128f1f5664/4x-UltraSharp.pth'}
