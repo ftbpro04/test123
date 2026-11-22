@@ -102,3 +102,9 @@ The default preset is MiniMax PRISM I2VA. Qwen and video duration both start at 
 The model downloader now provisions the pinned Qwen snapshot plus the original Qwen image/video processor configs in `models/LLM/Qwen-VL/Qwen3.5-4B-heretic-v2`. Wait for the auto-prompt model to be ready before queuing. This adds roughly 9 GB to the model downloads. The build checks Qwen node registration, the chosen model/preset, and CPU image tokenization. GPU prompt/video generation remains untested here.
 
 The PRISM master instructions are editable in `/workspace/ComfyUI/custom_nodes/ComfyUI-QwenVL-Mod/presets/h3_prism.json`. This file is seeded once and preserved. Restart ComfyUI after editing it.
+
+## 10Eros Max v1.0 Hybrid INT8 HQ
+
+The full, core, ref2va and fl2va profiles also download `10Eros_Max_8stepTurbo_v1.0_hybrid-int8_HQ.safetensors` from TenStrip/10Eros-Max into `models/diffusion_models`. The pinned file is 22,893,198,448 bytes (22.9 GB); size and SHA256 are verified before use. Existing PRISM workflows retain their selected model and sampling settings. The author's v1.0 guidance uses LCM/simple with 8–12 steps; this download addition does not provide a GPU-validated workflow for the new model.
+
+Image: `ghcr.io/ftbpro04/vast-minimax-h3:prism-10eros-v1-autoprompt-20261122`. Launch a new instance using this image to receive the updated downloader; preserve `/workspace` to reuse existing models.

@@ -2,6 +2,21 @@
   "default_profile": "full",
   "models": [
     {
+      "name": "10Eros Max 8-step Turbo v1.0 Hybrid INT8 HQ",
+      "repo": "TenStrip/10Eros-Max",
+      "remote_path": "10Eros_Max_8stepTurbo_v1.0_hybrid-int8_HQ.safetensors",
+      "local_dir": "diffusion_models",
+      "profiles": [
+        "full",
+        "core",
+        "ref2va",
+        "fl2va"
+      ],
+      "revision": "875036a9e9c363483095c82ee5da18fee3cef08b",
+      "expected_size": 22893198448,
+      "sha256": "776194990379ecaf81f8c56925164894f78f3ab27d905c23d85c1164f20ec5bc"
+    },
+    {
       "name": "H3 auto-prompt Qwen3.5-4B Heretic vision model",
       "repo": "tvall43/Qwen3.5-4B-heretic-v2",
       "remote_path": "Qwen3.5-4B-heretic-v2",
