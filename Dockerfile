@@ -65,7 +65,13 @@ RUN mkdir -p /opt/seed/workflows \
 
 COPY workflows/ /opt/seed/workflows/
 COPY scripts/check_prism_nodes.py /tmp/check_prism_nodes.py
-RUN python /tmp/check_prism_nodes.py /opt/ComfyUI && python /usr/local/bin/provision_qwen_prompt.py && rm /tmp/check_prism_nodes.py
+# CI has no mounted NVIDIA driver. Use the official toolkit driver stub only
+# for CPU node-registration checks; never leave it on the runtime library path.
+RUN mkdir -p /tmp/cuda-build-stubs \
+    && ln -s /usr/local/cuda/lib64/stubs/libcuda.so /tmp/cuda-build-stubs/libcuda.so.1 \
+    && LD_LIBRARY_PATH="/tmp/cuda-build-stubs:${LD_LIBRARY_PATH}" python /tmp/check_prism_nodes.py /opt/ComfyUI \
+    && python /usr/local/bin/provision_qwen_prompt.py \
+    && rm -rf /tmp/cuda-build-stubs /tmp/check_prism_nodes.py
 
 COPY scripts/download_models.py /usr/local/bin/download_minimax_models.py
 COPY scripts/h3_batch.py scripts/h3_batch.html /usr/local/bin/
