@@ -28,6 +28,11 @@ if PROFILE not in VALID_PROFILES:
     PROFILE = "full"
 
 MODELS = [
+    {'name': 'H3 video VAE INT8 ConvRot (two-pass)', 'repo': 'Comfy-Org/MiniMax-H3', 'remote_path': 'vae/minimax_h3_video_vae_int8_convrot.safetensors', 'local_dir': 'vae', 'profiles': ['full', 'core', 'ref2va', 'fl2va'], 'revision': '4b53a35191437de05370da548e59aeabe2a5a09a', 'expected_size': 2811065184, 'sha256': '52a2c8c73583c86e4f41cdcce3a6ad0ea562987bc0bf3d60a0cef5f5c8e60c0e'},
+    {'name': 'H3 TA preview decoder', 'repo': 't8star/Taeh3-Comfy', 'remote_path': 'models/vae_approx/taeh3_2d_kijai.safetensors', 'local_dir': 'vae_approx', 'profiles': ['full', 'core', 'ref2va', 'fl2va'], 'revision': 'd2d91ae1882a05d98645c912d60441a282cfdb48', 'expected_size': 9791388, 'sha256': 'f0f60fa072089997f817402098c2fd90777cb2660dd79cf5df42fc1e3e08e527'},
+    {'name': 'H3 Qwen3-VL 32B W4/W6 text encoder (two-pass)', 'repo': 'LokkenJP/TenEros_Max_optimized_learned', 'remote_path': 'text_encoder/qwen3vl_32b_minimax_h3_native_w4g128_w6protected_15.35gb.safetensors', 'local_dir': 'text_encoders', 'profiles': ['full', 'core', 'ref2va', 'fl2va'], 'revision': '3415250db9e2cb89b886f5375c1306fc933e215f', 'expected_size': 15354664454, 'sha256': '61cdec876d0a34ced0809664434c013ff2fc8c3f0a39beffae6162942c97c446'},
+    {'name': 'H3 LBH 2D learned latent upscaler', 'repo': 'LBH-123-AI/Minimax_h3_latent_Upscaler', 'remote_path': 'minimax_h3_latent_upscaler_2d_conv_v1/minimax_h3_latent_upscaler_2d_conv_v1_fp16.safetensors', 'local_dir': 'latent_upscale_models', 'profiles': ['full', 'core', 'ref2va', 'fl2va'], 'revision': '85a0187096046badc0a71ab6bd6be182ab06c0f4', 'expected_size': 364308928, 'sha256': '6e0f35692784ba2376704a48a90fb07f90aef76ef21200d5525d6627a54fe909'},
+
     {'name': '10Eros Max 8-step Turbo v1.0 Hybrid INT8 HQ', 'repo': 'TenStrip/10Eros-Max', 'remote_path': '10Eros_Max_8stepTurbo_v1.0_hybrid-int8_HQ.safetensors', 'local_dir': 'diffusion_models', 'profiles': ['full', 'core', 'ref2va', 'fl2va'], 'revision': '875036a9e9c363483095c82ee5da18fee3cef08b', 'expected_size': 22893198448, 'sha256': '776194990379ecaf81f8c56925164894f78f3ab27d905c23d85c1164f20ec5bc'},
     {'name': 'H3 auto-prompt Qwen3.5-4B Heretic vision model', 'repo': 'tvall43/Qwen3.5-4B-heretic-v2', 'remote_path': 'Qwen3.5-4B-heretic-v2', 'local_dir': 'LLM/Qwen-VL', 'kind': 'prompt_snapshot', 'profiles': ['full', 'core', 'fl2va', 'ref2va']},
     {'name': 'Singularity V2 x 10Eros Max PRISM-DMAD-PDMD INT8', 'repo': 'OliviaRossi/Minimax-h3_Singularity-x-10Eros-Max_PRISM', 'remote_path': 'PRISM_DMAD_PDMD_int8.safetensors', 'local_dir': 'diffusion_models', 'profiles': ['full', 'core', 'ref2va', 'fl2va'], 'revision': '4e0e1b17a24638450d4ded398d42dc174a30b9b1', 'expected_size': 20284678584, 'sha256': '948e1d56621f5e76677d515939c716ebf85de8131e4e498013c87ec9e4edba46'},
@@ -39,9 +44,6 @@ MODELS = [
     {"name":"FL2V Turbo 8-step 768p LoRA","repo":"lightx2v/Minimax-h3-Turbo","remote_path":"minimax_h3_fl2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors","local_dir":"loras","profiles":["full","core","fl2va","ref2va"]},
     {"name":"Ref2V Turbo 8-step 768p LoRA","repo":"lightx2v/Minimax-h3-Turbo","remote_path":"minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors","local_dir":"loras","profiles":["full","core","ref2va"]},
 ]
-
-if os.getenv("DOWNLOAD_INT8_VIDEO_VAE", "0").lower() in {"1", "true", "yes", "on"}:
-    MODELS.append({"name":"MiniMax H3 video VAE INT8 ConvRot (optional)","repo":"Comfy-Org/MiniMax-H3","remote_path":"vae/minimax_h3_video_vae_int8_convrot.safetensors","local_dir":".","profiles":["full","core","fl2va","ref2va"]})
 
 lock = threading.Lock()
 write_lock = threading.Lock()

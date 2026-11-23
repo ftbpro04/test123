@@ -108,3 +108,14 @@ The PRISM master instructions are editable in `/workspace/ComfyUI/custom_nodes/C
 The full, core, ref2va and fl2va profiles also download `10Eros_Max_8stepTurbo_v1.0_hybrid-int8_HQ.safetensors` from TenStrip/10Eros-Max into `models/diffusion_models`. The pinned file is 22,893,198,448 bytes (22.9 GB); size and SHA256 are verified before use. Existing PRISM workflows retain their selected model and sampling settings. The author's v1.0 guidance uses LCM/simple with 8–12 steps; this download addition does not provide a GPU-validated workflow for the new model.
 
 Image: `ghcr.io/ftbpro04/vast-minimax-h3:prism-10eros-v1-autoprompt-20261122`. Launch a new instance using this image to receive the updated downloader; preserve `/workspace` to reuse existing models.
+
+## 10Eros Max v1 simple two-pass workflow
+
+Image: `ghcr.io/ftbpro04/vast-minimax-h3:10eros-v1-twopass-20261122`.
+Open `H3-Turbo-2Pass-10Eros-Max-v1-INT8-HQ.json` in ComfyUI saved workflows. It is adapted from the supplied `H3_Turbo_2Pass_ErosMax_v1_simple_v4.json`, selecting TenStrip's `10Eros_Max_8stepTurbo_v1.0_hybrid-int8_HQ.safetensors` from `models/diffusion_models`. The two-pass graph, sampling settings and optional LoRA rows are preserved. Optional disabled LoRAs are not downloaded; install their files before enabling them.
+
+Four additional verified files are automatically downloaded: the workflow's W4/W6 Qwen3-VL text encoder, INT8 ConvRot video VAE, TA preview decoder and LBH 2D latent upscaler (18.54 GB combined). Audio VAE and 10Eros diffusion weights are already included. The Qwen auto-prompt generator and existing PRISM workflows remain available; this supplied workflow uses its own manual prompt input.
+
+The image pins ComfyUI 0.46.0 and includes H3 Power LoRA Stack, LBH latent upscaler, Lokken VideoTools and NVIDIA VFX nodes, plus updated KJNodes and rgthree. GPU inference is required to verify generation, quantized loading and RTX processing. RTX super-resolution requires a supported NVIDIA RTX GPU; bypass that node on unsupported GPUs.
+
+On a reused volume the six curated node packs are refreshed once, backing up their previous directories to `ComfyUI/node-backups/twopass-20261122`. Models, user workflows and prompt presets are preserved.

@@ -67,6 +67,21 @@ fi
 # Seed curated nodes, but never overwrite anything the user/Manager already changed.
 rsync -a --ignore-existing /opt/seed/custom_nodes/ "$DATA_ROOT/custom_nodes/" || true
 
+# Upgrade the curated two-pass dependencies once per image version. Keep a full
+# backup of existing packs so local customizations can be recovered.
+upgrade_marker="$DATA_ROOT/.h3-twopass-nodes-20261122"
+if [[ ! -f "$upgrade_marker" ]]; then
+  backup_root="$DATA_ROOT/node-backups/twopass-20261122"
+  for pack in rgthree-comfy ComfyUI-KJNodes ComfyUI-H3-PowerLoraStack Comfyui_Minimax_h3_latent_Upscaler ComfyUI-Lokken-VideoTools ComfyUI_Nvidia_VFX_Nodes; do
+    if [[ -d "$DATA_ROOT/custom_nodes/$pack" ]]; then
+      mkdir -p "$backup_root"
+      cp -a "$DATA_ROOT/custom_nodes/$pack" "$backup_root/$pack"
+    fi
+    rsync -a --exclude='config*.json' --exclude='user*.json' "/opt/seed/custom_nodes/$pack/" "$DATA_ROOT/custom_nodes/$pack/"
+  done
+  touch "$upgrade_marker"
+fi
+
 python /usr/local/bin/configure_qwen.py "$DATA_ROOT/custom_nodes/ComfyUI-QwenVL-Mod"
 
 # Seed starter workflows without overwriting user's versions.
