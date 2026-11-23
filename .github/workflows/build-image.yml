@@ -57,4 +57,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ steps.owner.outputs.name }}/vast-minimax-h3:latest
-            ghcr.io/${{ steps.owner.outputs.name }}/vast-minimax-h3:10eros-v1-twopass-20261122
+            ghcr.io/${{ steps.owner.outputs.name }}/vast-minimax-h3:h3-dashboard-logs-20261123
