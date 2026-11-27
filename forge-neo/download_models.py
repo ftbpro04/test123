@@ -47,6 +47,7 @@ def get(url,**kw):
   if is_civitai and code in {401,403}:
    detail='API key was provided; check that it is valid and your account has access' if headers(url) else 'set CIVITAI_API_KEY or CIVITAI_TOKEN in the Vast template environment'
    raise RuntimeError(f'Civitai HTTP {code}: {detail}. A 403 may also be a host-network or site access block.')
+  if code==451:raise RuntimeError('Model server HTTP 451: unavailable for legal/access-policy reasons from this connection. Check provider availability for the Vast host location or contact Civitai support; changing the API key alone may not resolve this.')
   if code==404:raise RuntimeError('Model server HTTP 404: requested model/version/file is unavailable')
   if code==429:raise RuntimeError('Model server HTTP 429: rate limit reached; retry later')
   raise RuntimeError(f'Model server HTTP {code}: download request failed')
