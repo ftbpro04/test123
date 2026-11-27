@@ -17,12 +17,40 @@ SPECS += [
 ]
 def headers(url):
  from urllib.parse import urlparse
- token=os.getenv('CIVITAI_API_KEY','') if urlparse(url).hostname=='civitai.com' else os.getenv('HF_TOKEN','') if urlparse(url).hostname=='huggingface.co' else ''
+ host=(urlparse(url).hostname or '').lower()
+ token=''
+ if host in {'civitai.com','www.civitai.com','civitai.red','www.civitai.red'}:
+  token=(os.getenv('CIVITAI_API_KEY') or os.getenv('CIVITAI_TOKEN') or '').strip()
+ elif host=='huggingface.co':
+  token=(os.getenv('HF_TOKEN') or '').strip()
  return {'Authorization':'Bearer '+token} if token else {}
+
 def get(url,**kw):
- r=requests.get(url,headers=headers(url),timeout=(30,120),**kw)
- if not r.ok:raise RuntimeError(f'HTTP {r.status_code}: check access, API token, version and availability')
- return r
+ from urllib.parse import urlparse, urlunparse
+ parsed=urlparse(url)
+ if parsed.hostname in {'civitai.red','www.civitai.red','www.civitai.com'}:
+  url=urlunparse(parsed._replace(netloc='civitai.com'))
+ is_civitai=urlparse(url).hostname=='civitai.com'
+ for attempt in range(3):
+  try:
+   r=requests.get(url,headers=headers(url),timeout=(30,120),**kw)
+  except (requests.Timeout,requests.ConnectionError):
+   if attempt==2:raise RuntimeError('Connection to model server failed or timed out; check instance network access') from None
+   time.sleep(2**attempt);continue
+  if r.ok:return r
+  code=r.status_code
+  retry_after=r.headers.get('Retry-After','')
+  r.close()
+  if code in {429,500,502,503,504} and attempt<2:
+   delay=min(int(retry_after),30) if retry_after.isdigit() else 2**attempt
+   time.sleep(delay);continue
+  if is_civitai and code in {401,403}:
+   detail='API key was provided; check that it is valid and your account has access' if headers(url) else 'set CIVITAI_API_KEY or CIVITAI_TOKEN in the Vast template environment'
+   raise RuntimeError(f'Civitai HTTP {code}: {detail}. A 403 may also be a host-network or site access block.')
+  if code==404:raise RuntimeError('Model server HTTP 404: requested model/version/file is unavailable')
+  if code==429:raise RuntimeError('Model server HTTP 429: rate limit reached; retry later')
+  raise RuntimeError(f'Model server HTTP {code}: download request failed')
+
 
 def valid(path,sha=None,format="safetensors"):
  if not path.is_file():return False

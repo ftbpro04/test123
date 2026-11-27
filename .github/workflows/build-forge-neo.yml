@@ -27,4 +27,6 @@ jobs:
           context: forge-neo
           push: true
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          tags: ghcr.io/${{ github.repository_owner }}/vast-forge-neo:anima-v2
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/vast-forge-neo:anima-v2
+            ghcr.io/${{ github.repository_owner }}/vast-forge-neo:anima-wildcards-20261126

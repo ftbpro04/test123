@@ -28,6 +28,14 @@ jupyter lab --config="$WORKSPACE/jupyter-config.json" >> "$WORKSPACE/logs/jupyte
       ln -s "$NEO_PERSIST_ROOT/$dir" "$dir"
     fi
   done
+  # Seed empty user-editable wildcard files without touching existing contents.
+  wildcard_dir="$NEO_PERSIST_ROOT/extensions/sd-dynamic-prompts/wildcards"
+  mkdir -p "$wildcard_dir"
+  for filename in 'INTERCHENGABLE.txt' 'CAMERA ANGLE.txt' 'COMPOSITION.txt'; do
+    if [[ ! -e "$wildcard_dir/$filename" ]]; then
+      (set -o noclobber; : > "$wildcard_dir/$filename")
+    fi
+  done
   python /opt/template/download_models.py >> "$WORKSPACE/logs/neo-model-download.log" 2>&1 &
   downloader=$!
   echo "$downloader" > "$WORKSPACE/logs/neo-model-download.pid"
